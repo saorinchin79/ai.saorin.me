@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Prompt Template Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__icon">🎬</span>
+      <div>
+        <h1>AI Prompt Template Generator</h1>
+        <p class="brand__sub">Edit <b>Character</b>, <b>Object</b>, <b>Scene</b> &amp; <b>Background</b> once — they flow into every shot.</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" id="btn-example" title="Load the granola-bar film-critic example">★ Load Example</button>
+      <button class="btn" id="btn-clear" title="Start from a blank slate">＋ New</button>
+      <div class="lib">
+        <button class="btn" id="btn-library" title="Saved templates">▤ Library</button>
+        <div class="lib__menu" id="lib-menu" hidden></div>
+      </div>
+      <button class="btn" id="btn-save" title="Save current form to the library">⤓ Save</button>
+      <span class="toolbar__sep" aria-hidden="true"></span>
+      <button class="btn" id="btn-export" title="Export this template as a .json file you can share">⤴ Export</button>
+      <button class="btn" id="btn-import" title="Import a template from a .json file">⤵ Import</button>
+      <input type="file" id="file-import" accept="application/json,.json" hidden />
+      <span class="toolbar__sep" aria-hidden="true"></span>
+      <button class="btn btn--primary" id="btn-copy" title="Copy the generated prompt">⧉ Copy Prompt</button>
+      <button class="btn" id="btn-download" title="Download the prompt as .txt">↓ .txt</button>
+    </div>
+  </header>
+
+  <div class="tokenbar" id="tokenbar" title="Click a token to insert it into the field you last edited">
+    <span class="tokenbar__label">Insert token:</span>
+    <!-- token chips injected by JS -->
+  </div>
+
+  <main class="layout">
+    <!-- ================= FORM ================= -->
+    <section class="panel form" id="form">
+      <!-- CONCEPT -->
+      <details class="card" open>
+        <summary class="card__head"><span class="card__num">01</span> Concept</summary>
+        <div class="card__body grid">
+          <label class="field span2">
+            <span>Prompt category / heading</span>
+            <input type="text" data-bind="meta.category" placeholder="Marketing and Advertising Prompt" />
+          </label>
+          <label class="field">
+            <span>Brand name <em>{{brand}}</em></span>
+            <input type="text" data-bind="meta.brand" placeholder="The Natural" />
+          </label>
+          <label class="field">
+            <span>Total duration <em>{{duration}}</em></span>
+            <input type="text" data-bind="meta.duration" placeholder="25-second" />
+          </label>
+          <label class="field">
+            <span>Verdict / payoff <em>{{verdict}}</em></span>
+            <input type="text" data-bind="meta.verdict" placeholder="Four stars" />
+          </label>
+          <label class="field">
+            <span>Image reference label <em>{{ref}}</em></span>
+            <input type="text" data-bind="meta.refLabel" placeholder="Image 1" />
+          </label>
+          <label class="field span2">
+            <span>Concept summary <small>(the opening pitch paragraph — supports tokens)</small></span>
+            <textarea data-bind="meta.concept" rows="5" placeholder="Describe the idea in a sentence or two…"></textarea>
+          </label>
+        </div>
+      </details>
+
+      <!-- SUBJECTS -->
+      <details class="card card--accent" open>
+        <summary class="card__head"><span class="card__num">02</span> Subjects <small>the global editable fields</small></summary>
+        <div class="card__body grid">
+          <label class="field span2">
+            <span>Character <em>{{character}}</em></span>
+            <textarea data-bind="subjects.character" rows="2" placeholder="A man in his 60s in tweed"></textarea>
+          </label>
+          <label class="field span2">
+            <span>Object / Product <em>{{object}}</em></span>
+            <textarea data-bind="subjects.object" rows="2" placeholder="a granola bar"></textarea>
+          </label>
+          <label class="field">
+            <span>Scene / Setting <em>{{scene}}</em></span>
+            <input type="text" data-bind="subjects.scene" placeholder="a small wooden desk" />
+          </label>
+          <label class="field">
+            <span>Background <em>{{background}}</em></span>
+            <input type="text" data-bind="subjects.background" placeholder="Out-of-focus bookshelves" />
+          </label>
+          <label class="field span2">
+            <span>Surface / Prop <em>{{surface}}</em></span>
+            <input type="text" data-bind="subjects.surface" placeholder="a small white plate" />
+          </label>
+        </div>
+      </details>
+
+      <!-- STYLE -->
+      <details class="card" open>
+        <summary class="card__head"><span class="card__num">03</span> Look &amp; Style</summary>
+        <div class="card__body grid">
+          <label class="field span2">
+            <span>Color grade <em>{{grade}}</em></span>
+            <input type="text" data-bind="style.grade" placeholder="Warm, desaturated color grade — aged paper tones" />
+          </label>
+          <label class="field">
+            <span>Frame rate <em>{{fps}}</em></span>
+            <input type="text" data-bind="style.fps" placeholder="24fps" />
+          </label>
+          <label class="field">
+            <span>Default lens</span>
+            <input type="text" data-bind="style.lens" placeholder="50mm" />
+          </label>
+        </div>
+      </details>
+
+      <!-- SHOTS -->
+      <details class="card" open>
+        <summary class="card__head"><span class="card__num">04</span> Shots <small id="shot-count"></small></summary>
+        <div class="card__body">
+          <div id="shots"></div>
+          <button class="btn btn--ghost btn--wide" id="btn-add-shot">＋ Add shot</button>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= PREVIEW ================= -->
+    <section class="panel preview">
+      <div class="preview__head">
+        <h2>Generated Prompt</h2>
+        <div class="preview__stats" id="stats"></div>
+      </div>
+      <pre class="preview__out" id="output" tabindex="0"></pre>
+      <div class="preview__foot">
+        <button class="btn btn--primary" id="btn-copy2">⧉ Copy</button>
+        <button class="btn" id="btn-download2">↓ Download .txt</button>
+        <span class="hint" id="copy-hint"></span>
+      </div>
+      <details class="legend">
+        <summary>Token reference</summary>
+        <ul id="legend-list"></ul>
+      </details>
+    </section>
+  </main>
+
+  <!-- shot card template -->
+  <template id="shot-template">
+    <div class="shot" data-shot>
+      <div class="shot__bar">
+        <span class="shot__num"></span>
+        <input class="shot__title" data-shot-field="title" placeholder="SHOT TITLE" />
+        <input class="shot__subtitle" data-shot-field="subtitle" placeholder="SUBTITLE (optional)" />
+        <label class="shot__sec" title="Shot length in seconds — feeds the runtime estimate">
+          <input type="number" min="0" step="0.5" inputmode="decimal" data-shot-field="seconds" placeholder="0" />
+          <span>sec</span>
+        </label>
+        <div class="shot__actions">
+          <button class="iconbtn" data-shot-act="up" title="Move up">↑</button>
+          <button class="iconbtn" data-shot-act="down" title="Move down">↓</button>
+          <button class="iconbtn" data-shot-act="dup" title="Duplicate">⧉</button>
+          <button class="iconbtn iconbtn--danger" data-shot-act="del" title="Delete">✕</button>
+        </div>
+      </div>
+      <div class="shot__grid">
+        <label class="field span2">
+          <span>Camera &amp; lens</span>
+          <input data-shot-field="camera" placeholder="Cinematic medium shot, 50mm lens, eye level" />
+        </label>
+        <label class="field span2">
+          <span>Lighting <small>(optional)</small></span>
+          <input data-shot-field="lighting" placeholder="Warm tungsten key light from left" />
+        </label>
+        <label class="field span2">
+          <span>Action / description <small>(supports tokens)</small></span>
+          <textarea data-shot-field="action" rows="3" placeholder="What happens in the shot…"></textarea>
+        </label>
+        <label class="field">
+          <span>Dialogue lead-in</span>
+          <input data-shot-field="dialogueLead" placeholder="He delivers:" />
+        </label>
+        <label class="field">
+          <span>Grade &amp; tech note</span>
+          <input data-shot-field="gradeTech" placeholder="Warm desaturated grade. 24fps, film grain." />
+        </label>
+        <label class="field span2">
+          <span>Dialogue / spoken line <small>(optional — wrapped in quotes)</small></span>
+          <textarea data-shot-field="dialogue" rows="2" placeholder="'Four stars.'"></textarea>
+        </label>
+      </div>
+    </div>
+  </template>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

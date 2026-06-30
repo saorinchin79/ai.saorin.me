@@ -1,0 +1,23 @@
+{
+  "name": "ai-prompt-template-generator",
+  "version": "1.0.0",
+  "description": "Form-driven cinematic AI prompt template generator. Edit Character / Object / Scene / Background as global tokens and compose multi-shot video prompts.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "ai",
+    "prompt",
+    "template",
+    "generator",
+    "video",
+    "cinematic"
+  ],
+  "author": "saorin",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

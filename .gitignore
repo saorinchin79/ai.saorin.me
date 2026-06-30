@@ -1,0 +1,4 @@
+node_modules/
+data/templates.json
+.DS_Store
+*.log

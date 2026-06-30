@@ -19,6 +19,7 @@ function blankState() {
   return {
     meta: {
       category: 'Marketing and Advertising Prompt',
+      kind: 'shots', // 'shots' (cinematic video) | 'sections' (design / image)
       brand: '',
       duration: '',
       verdict: '',
@@ -37,8 +38,17 @@ function blankState() {
       fps: '24fps',
       lens: '50mm',
     },
+    fields: [], // custom editable placeholder tokens: {key, label, value}
     shots: [newShot()],
   };
+}
+
+let _fid = 0;
+function newField(overrides = {}) {
+  _fid += 1;
+  const f = Object.assign({ _id: 'f' + _fid, key: '', label: '', value: '' }, overrides);
+  f._id = 'f' + _fid;
+  return f;
 }
 
 let _sid = 0;
@@ -67,6 +77,7 @@ function exampleState() {
   return {
     meta: {
       category: 'Marketing and Advertising Prompt',
+      kind: 'shots',
       brand: 'The Natural',
       duration: '25-second',
       verdict: 'Four stars',
@@ -171,3 +182,104 @@ function exampleState() {
     ],
   };
 }
+
+/* ---- Sections-kind preset: Grocery Store Grand Opening poster ---- */
+function groceryPosterState() {
+  return {
+    meta: {
+      category: 'Poster Design Prompt',
+      kind: 'sections',
+      brand: '',
+      duration: '',
+      verdict: '',
+      refLabel: '',
+      concept:
+        'Design a premium, modern, and highly professional promotional poster for the Grand Opening of a Grocery Store. ' +
+        'The design should feel clean, luxurious, vibrant, and trustworthy — similar to a premium supermarket advertisement ' +
+        'created by an award-winning senior graphic designer.',
+    },
+    subjects: { character: '', object: '', scene: '', background: '', surface: '' },
+    style: { grade: '', fps: '', lens: '' },
+    fields: [
+      newField({ label: 'Headline', key: 'headline', value: 'GRAND OPENING' }),
+      newField({ label: 'Subtitle', key: 'subtitle', value: 'OF OUR NEW GROCERY STORE' }),
+      newField({ label: 'Badge line 1', key: 'badgeLine1', value: 'SPECIAL OPENING OFFERS' }),
+      newField({ label: 'Badge line 2', key: 'badgeLine2', value: "DON'T MISS OUT!" }),
+      newField({ label: 'Opening date', key: 'openingDate', value: '25th July 2026' }),
+      newField({ label: 'Opening time', key: 'openingTime', value: '9:00 AM' }),
+      newField({ label: 'Store name', key: 'storeName', value: 'ABC Grocery Store' }),
+      newField({ label: 'Address', key: 'address', value: '123 Main Street' }),
+      newField({ label: 'City', key: 'city', value: 'Your City' }),
+      newField({ label: 'Slogan', key: 'slogan', value: 'Shop More. Save More. Live Better.' }),
+    ],
+    shots: [
+      newShot({
+        title: 'Layout & Composition',
+        action:
+          '- Vertical A4/A3 poster (4:5 aspect ratio).\n' +
+          '- Clean editorial layout with excellent spacing and visual hierarchy.\n' +
+          '- Large bold headline at the top: {{headline}}\n' +
+          '- Smaller subtitle beneath it: {{subtitle}}\n' +
+          '- Elegant decorative elements: subtle confetti, green leaves in the corners, and soft golden accents.',
+      }),
+      newShot({
+        title: 'Main Visual',
+        action:
+          'Feature a realistic chrome shopping cart overflowing with fresh groceries: lettuce, broccoli, tomatoes, bell ' +
+          'peppers, bananas, apples, oranges, grapes, bread, milk, juice, eggs, rice, cooking oil, and everyday grocery ' +
+          'essentials. Everything appears fresh, colorful, and photorealistic with premium commercial advertising quality.',
+      }),
+      newShot({
+        title: 'Background',
+        action:
+          'Soft warm white to cream gradient background. Minimal texture. Bright natural lighting. Clean and elegant, ' +
+          'with fresh green accents throughout.',
+      }),
+      newShot({
+        title: 'Promotional Badge',
+        action:
+          "Create a circular premium badge that reads: '{{badgeLine1}}' / '{{badgeLine2}}'. Use green, gold, and red colors.",
+      }),
+      newShot({
+        title: 'Information Section',
+        action:
+          'Editable placeholders, cleanly laid out:\n' +
+          'Opening Date — {{openingDate}}\n' +
+          'Time — {{openingTime}}\n' +
+          'Venue — {{storeName}}, {{address}}, {{city}}',
+      }),
+      newShot({
+        title: 'Features Section',
+        action:
+          'Four modern circular icons with labels: Fresh Everyday · Best Prices · Wide Variety · Friendly Service.',
+      }),
+      newShot({
+        title: 'Footer',
+        action: "Green curved footer with a gold accent line. Include the slogan: '{{slogan}}'.",
+      }),
+      newShot({
+        title: 'Color Palette',
+        action: 'Emerald Green, Fresh Leaf Green, White, Cream, Gold, and Red accents.',
+      }),
+      newShot({
+        title: 'Typography',
+        action:
+          'Bold modern sans-serif fonts. Large impactful heading. Professional spacing. Excellent readability.',
+      }),
+      newShot({
+        title: 'Design Style',
+        action:
+          'Ultra-realistic, premium supermarket branding, luxury retail advertisement, high-end print quality, clean ' +
+          'composition, modern editorial style, vibrant colors, commercial photography look, soft shadows, natural ' +
+          'lighting, 8K resolution, crisp details, print-ready quality, eye-catching, minimal yet elegant — an ' +
+          'award-winning graphic design aesthetic.',
+      }),
+    ],
+  };
+}
+
+/* Built-in preset library (the "▤ Library" of starter prompts) */
+const PRESETS = [
+  { id: 'film-critic', name: 'Film Critic — Granola Bar (video · 6 shots)', kind: 'shots', build: exampleState },
+  { id: 'grocery-poster', name: 'Grocery Store Grand Opening (poster · image)', kind: 'sections', build: groceryPosterState },
+];

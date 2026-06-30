@@ -18,6 +18,19 @@ npm start
 
 Then open the URL in your browser.
 
+## Presets & template kinds
+
+Click **✦ Presets** for built-in starter prompts. There are two template *kinds*:
+
+- **Shots** — cinematic multi-shot video prompts (e.g. *Film Critic — Granola Bar*). Each block is a camera shot with lens/lighting/dialogue/duration.
+- **Sections** — structured design/image prompts (e.g. *Grocery Store Grand Opening* poster). Each block is a titled section of content. No `SHOT NN` numbering, camera, or runtime — just heading + body.
+
+The form adapts to the kind: cinematic-only panels (Subjects, Look & Style, brand/duration/verdict) are hidden for **Sections** templates.
+
+## Custom Fields (editable placeholders)
+
+The **Fields** panel lets any template expose its own editable placeholder tokens. Each field has a **Label**, a **Token** key, and a **Value** — the value flows wherever you write `{{key}}`. The grocery poster ships with `{{headline}}`, `{{storeName}}`, `{{openingDate}}`, `{{openingTime}}`, `{{slogan}}`, … so you can re-skin the poster for any store by editing the fields once.
+
 ## How it works
 
 ### Global tokens (the editable fields)

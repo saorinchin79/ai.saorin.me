@@ -105,6 +105,22 @@ body {
   border-radius: 999px; padding: 4px 10px; transition: .12s;
 }
 .chip:hover { background: var(--accent); color: #1a1407; border-color: var(--accent); }
+.tokenbar__none { font-size: 12px; color: var(--faint); font-style: italic; }
+
+/* custom field rows */
+.frow {
+  display: grid; grid-template-columns: 1fr 1fr 1.4fr auto; gap: 10px; align-items: end;
+  padding: 10px; margin-bottom: 8px;
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px;
+}
+.frow .field > span { font-size: 11px; }
+.frow__key input { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--accent-2); }
+.frow__del { align-self: end; margin-bottom: 1px; }
+@media (max-width: 640px) {
+  .frow { grid-template-columns: 1fr 1fr; }
+  .frow__val { grid-column: 1 / -1; }
+  .frow__del { grid-column: 1 / -1; justify-self: end; }
+}
 
 /* ---------- layout ---------- */
 .layout {

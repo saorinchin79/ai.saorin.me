@@ -22,7 +22,7 @@ function setPath(o, p, v) {
 /* ---------- token substitution ---------- */
 function tokenMap() {
   const s = state;
-  return {
+  const map = {
     character: s.subjects.character,
     object: s.subjects.object,
     scene: s.subjects.scene,
@@ -35,6 +35,12 @@ function tokenMap() {
     verdict: s.meta.verdict,
     duration: s.meta.duration,
   };
+  // custom editable placeholder tokens (override/extend the built-ins)
+  (s.fields || []).forEach((f) => {
+    const k = String(f.key || '').trim();
+    if (k) map[k] = f.value;
+  });
+  return map;
 }
 function applyTokens(text) {
   const map = tokenMap();
@@ -71,11 +77,22 @@ function shotToText(shot, idx) {
 
   return `${header}\n${parts.join(' ')}`.trim();
 }
+function sectionToText(block) {
+  const heading = applyTokens(block.title).trim();
+  const body = applyTokens(block.action).replace(/[ \t]+$/gm, '').trim(); // keep internal line breaks
+  if (!heading && !body) return '';
+  return [heading, body].filter(Boolean).join('\n');
+}
 function generate() {
   const head = (applyTokens(state.meta.category).trim() || 'Prompt') + ':';
   const concept = applyTokens(state.meta.concept).trim();
-  const shots = state.shots.map((sh, i) => shotToText(sh, i)).join('\n\n---\n\n');
-  return [head, concept, shots].filter((x) => x && x.trim()).join('\n\n');
+  let blocks;
+  if (state.meta.kind === 'sections') {
+    blocks = state.shots.map((b) => sectionToText(b)).filter(Boolean).join('\n\n');
+  } else {
+    blocks = state.shots.map((sh, i) => shotToText(sh, i)).join('\n\n---\n\n');
+  }
+  return [head, concept, blocks].filter((x) => x && x.trim()).join('\n\n');
 }
 
 /* ---------- render ---------- */
@@ -92,7 +109,7 @@ function setStaticValues() {
 function renderShots() {
   const wrap = $('#shots');
   wrap.innerHTML = '';
-  const tpl = $('#shot-template');
+  const tpl = state.meta.kind === 'sections' ? $('#section-template') : $('#shot-template');
   state.shots.forEach((shot, idx) => {
     const node = tpl.content.firstElementChild.cloneNode(true);
     node.dataset.id = shot._id;
@@ -123,20 +140,58 @@ function update() {
   const out = generate();
   $('#output').textContent = out;
   const words = (out.match(/\S+/g) || []).length;
-  const rt = fmtDuration(totalSeconds());
-  $('#stats').textContent = `${state.shots.length} shots · ~${rt} · ${words} words · ${out.length} chars`;
-  $('#shot-count').textContent = `(${state.shots.length} · ~${rt})`;
+  const n = state.shots.length;
+  if (state.meta.kind === 'sections') {
+    $('#stats').textContent = `${n} sections · ${words} words · ${out.length} chars`;
+    $('#shot-count').textContent = `(${n})`;
+  } else {
+    const rt = fmtDuration(totalSeconds());
+    $('#stats').textContent = `${n} shots · ~${rt} · ${words} words · ${out.length} chars`;
+    $('#shot-count').textContent = `(${n} · ~${rt})`;
+  }
   saveDraft();
+}
+
+/* ---------- template kind UI + custom fields ---------- */
+function applyKindUI() {
+  const kind = state.meta.kind === 'sections' ? 'sections' : 'shots';
+  document.body.dataset.kind = kind;
+  $$('[data-kind-only]').forEach((el) => { el.hidden = el.dataset.kindOnly !== kind; });
+  $('#blocks-label').textContent = kind === 'sections' ? 'Sections' : 'Shots';
+  $('#btn-add-shot').textContent = kind === 'sections' ? '＋ Add section' : '＋ Add shot';
+}
+function renderFields() {
+  const wrap = $('#fields');
+  wrap.innerHTML = '';
+  const tpl = $('#field-template');
+  (state.fields || []).forEach((f) => {
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    node.dataset.id = f._id;
+    node.querySelectorAll('[data-field-prop]').forEach((el) => {
+      el.value = f[el.dataset.fieldProp] ?? '';
+    });
+    wrap.appendChild(node);
+  });
+}
+function renderPresetsMenu() {
+  $('#presets-menu').innerHTML = PRESETS.map(
+    (p) => `<div class="lib__item"><button class="lib__load" data-preset="${p.id}" title="Load this starter prompt">${escapeHtml(p.name)}</button></div>`
+  ).join('');
 }
 
 /* ---------- state load ---------- */
 function normalize(s) {
   const base = blankState();
   s = s || {};
+  const meta = { ...base.meta, ...(s.meta || {}) };
+  meta.kind = meta.kind === 'sections' ? 'sections' : 'shots';
   return {
-    meta: { ...base.meta, ...(s.meta || {}) },
+    meta,
     subjects: { ...base.subjects, ...(s.subjects || {}) },
     style: { ...base.style, ...(s.style || {}) },
+    fields: (Array.isArray(s.fields) ? s.fields : []).map((f) =>
+      newField({ ...(f && typeof f === 'object' ? f : {}), _id: undefined })
+    ),
     shots: (Array.isArray(s.shots) && s.shots.length ? s.shots : base.shots).map((sh) =>
       newShot({ ...(sh && typeof sh === 'object' ? sh : {}), _id: undefined })
     ),
@@ -144,7 +199,10 @@ function normalize(s) {
 }
 function loadState(s) {
   state = normalize(s);
+  applyKindUI();
   setStaticValues();
+  renderFields();
+  renderTokenbar();
   renderShots();
   update();
 }
@@ -264,26 +322,46 @@ function flash(msg) {
   flashTimer = setTimeout(() => (el.textContent = ''), 1800);
 }
 
-/* ---------- token bar + legend ---------- */
-function buildTokenbar() {
-  const bar = $('#tokenbar');
-  TOKENS.forEach((t) => {
-    const chip = document.createElement('button');
-    chip.className = 'chip';
-    chip.type = 'button';
-    chip.textContent = `{{${t.key}}}`;
-    chip.title = `Insert ${t.label}`;
-    chip.addEventListener('mousedown', (e) => {
-      e.preventDefault(); // keep focus on the field
-      insertToken(t.key);
-    });
-    bar.appendChild(chip);
-  });
+/* ---------- token bar + legend (built-in + custom field tokens) ---------- */
+function activeTokens() {
+  // cinematic built-ins only for 'shots' kind; custom fields always
+  const builtins = state.meta.kind === 'sections' ? [] : TOKENS;
+  const customs = (state.fields || [])
+    .map((f) => ({ key: String(f.key || '').trim(), label: (f.label || '').trim() || String(f.key || '').trim() }))
+    .filter((f) => f.key);
+  return [...builtins, ...customs];
 }
-function buildLegend() {
-  $('#legend-list').innerHTML = TOKENS.map(
-    (t) => `<li><code>{{${t.key}}}</code><span>${t.label}</span></li>`
-  ).join('');
+function makeChip(key, label) {
+  const chip = document.createElement('button');
+  chip.className = 'chip';
+  chip.type = 'button';
+  chip.textContent = `{{${key}}}`;
+  chip.title = `Insert ${label || key}`;
+  chip.addEventListener('mousedown', (e) => {
+    e.preventDefault(); // keep focus on the field
+    insertToken(key);
+  });
+  return chip;
+}
+function renderTokenbar() {
+  const bar = $('#tokenbar');
+  $$('.chip, .tokenbar__none', bar).forEach((c) => c.remove());
+  const toks = activeTokens();
+  if (toks.length) {
+    toks.forEach((t) => bar.appendChild(makeChip(t.key, t.label)));
+  } else {
+    const span = document.createElement('span');
+    span.className = 'tokenbar__none';
+    span.textContent = 'no tokens yet — add a field below';
+    bar.appendChild(span);
+  }
+  renderLegend();
+}
+function renderLegend() {
+  const toks = activeTokens();
+  $('#legend-list').innerHTML = toks.length
+    ? toks.map((t) => `<li><code>{{${escapeHtml(t.key)}}}</code><span>${escapeHtml(t.label)}</span></li>`).join('')
+    : '<li><span>No tokens yet — add fields to create editable placeholders.</span></li>';
 }
 function insertToken(key) {
   const el = lastFocused;
@@ -313,7 +391,7 @@ function wire() {
   // track focus for token insertion (skip the numeric seconds field)
   document.addEventListener('focusin', (e) => {
     const el = e.target;
-    if (el.matches('[data-bind], [data-shot-field]') && el.type !== 'number') lastFocused = el;
+    if (el.matches('[data-bind], [data-shot-field], [data-field-prop="value"]') && el.type !== 'number') lastFocused = el;
   });
 
   // shot field edits (delegated)
@@ -360,8 +438,42 @@ function wire() {
     $('#shots').lastElementChild?.querySelector('.shot__title')?.focus();
   });
 
+  // custom field edits (delegated)
+  const fields = $('#fields');
+  fields.addEventListener('input', (e) => {
+    const el = e.target.closest('[data-field-prop]');
+    if (!el) return;
+    const row = el.closest('[data-field]');
+    const idx = [...fields.children].indexOf(row);
+    if (idx < 0) return;
+    const prop = el.dataset.fieldProp;
+    if (prop === 'key') {
+      const cleaned = el.value.replace(/[^\w]/g, '');
+      if (cleaned !== el.value) el.value = cleaned; // tokens must be \w
+    }
+    state.fields[idx][prop] = el.value;
+    if (prop === 'key' || prop === 'label') renderTokenbar();
+    update();
+  });
+  fields.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-field-act="del"]');
+    if (!btn) return;
+    const idx = [...fields.children].indexOf(btn.closest('[data-field]'));
+    if (idx < 0) return;
+    state.fields.splice(idx, 1);
+    renderFields();
+    renderTokenbar();
+    update();
+  });
+  $('#btn-add-field').addEventListener('click', () => {
+    state.fields.push(newField());
+    renderFields();
+    renderTokenbar();
+    update();
+    $('#fields').lastElementChild?.querySelector('[data-field-prop="label"]')?.focus();
+  });
+
   // toolbar
-  $('#btn-example').addEventListener('click', () => loadState(exampleState()));
   $('#btn-clear').addEventListener('click', () => {
     if (confirm('Clear the form and start fresh?')) loadState(blankState());
   });
@@ -378,6 +490,23 @@ function wire() {
   $('#btn-download').addEventListener('click', downloadPrompt);
   $('#btn-download2').addEventListener('click', downloadPrompt);
 
+  // presets menu (built-in starter prompts)
+  const presetsMenu = $('#presets-menu');
+  $('#btn-presets').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = presetsMenu.hidden;
+    if (open) renderPresetsMenu();
+    presetsMenu.hidden = !open;
+    libMenu.hidden = true;
+  });
+  presetsMenu.addEventListener('click', (e) => {
+    const load = e.target.closest('[data-preset]');
+    if (!load) return;
+    const p = PRESETS.find((x) => x.id === load.dataset.preset);
+    if (p) loadState(p.build());
+    presetsMenu.hidden = true;
+  });
+
   // library menu
   const libBtn = $('#btn-library');
   const libMenu = $('#lib-menu');
@@ -386,6 +515,7 @@ function wire() {
     const open = libMenu.hidden;
     if (open) renderLibMenu();
     libMenu.hidden = !open;
+    presetsMenu.hidden = true;
   });
   libMenu.addEventListener('click', (e) => {
     const load = e.target.closest('[data-lib-load]');
@@ -401,7 +531,7 @@ function wire() {
       renderLibMenu();
     }
   });
-  document.addEventListener('click', () => (libMenu.hidden = true));
+  document.addEventListener('click', () => { libMenu.hidden = true; presetsMenu.hidden = true; });
 
   // keyboard: Ctrl/Cmd+S copies
   document.addEventListener('keydown', (e) => {
@@ -414,8 +544,6 @@ function wire() {
 
 /* ---------- init ---------- */
 function init() {
-  buildTokenbar();
-  buildLegend();
   wire();
   let draft = null;
   try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch {}

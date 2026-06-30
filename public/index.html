@@ -18,13 +18,16 @@
       </div>
     </div>
     <div class="toolbar">
-      <button class="btn" id="btn-example" title="Load the granola-bar film-critic example">★ Load Example</button>
+      <div class="lib">
+        <button class="btn btn--primary" id="btn-presets" title="Built-in starter prompts">✦ Presets ▾</button>
+        <div class="lib__menu" id="presets-menu" hidden></div>
+      </div>
       <button class="btn" id="btn-clear" title="Start from a blank slate">＋ New</button>
       <div class="lib">
-        <button class="btn" id="btn-library" title="Saved templates">▤ Library</button>
+        <button class="btn" id="btn-library" title="Your saved templates">▤ Library</button>
         <div class="lib__menu" id="lib-menu" hidden></div>
       </div>
-      <button class="btn" id="btn-save" title="Save current form to the library">⤓ Save</button>
+      <button class="btn" id="btn-save" title="Save current form to your library">⤓ Save</button>
       <span class="toolbar__sep" aria-hidden="true"></span>
       <button class="btn" id="btn-export" title="Export this template as a .json file you can share">⤴ Export</button>
       <button class="btn" id="btn-import" title="Import a template from a .json file">⤵ Import</button>
@@ -51,19 +54,19 @@
             <span>Prompt category / heading</span>
             <input type="text" data-bind="meta.category" placeholder="Marketing and Advertising Prompt" />
           </label>
-          <label class="field">
+          <label class="field" data-kind-only="shots">
             <span>Brand name <em>{{brand}}</em></span>
             <input type="text" data-bind="meta.brand" placeholder="The Natural" />
           </label>
-          <label class="field">
+          <label class="field" data-kind-only="shots">
             <span>Total duration <em>{{duration}}</em></span>
             <input type="text" data-bind="meta.duration" placeholder="25-second" />
           </label>
-          <label class="field">
+          <label class="field" data-kind-only="shots">
             <span>Verdict / payoff <em>{{verdict}}</em></span>
             <input type="text" data-bind="meta.verdict" placeholder="Four stars" />
           </label>
-          <label class="field">
+          <label class="field" data-kind-only="shots">
             <span>Image reference label <em>{{ref}}</em></span>
             <input type="text" data-bind="meta.refLabel" placeholder="Image 1" />
           </label>
@@ -74,8 +77,8 @@
         </div>
       </details>
 
-      <!-- SUBJECTS -->
-      <details class="card card--accent" open>
+      <!-- SUBJECTS (cinematic only) -->
+      <details class="card card--accent" id="card-subjects" data-kind-only="shots" open>
         <summary class="card__head"><span class="card__num">02</span> Subjects <small>the global editable fields</small></summary>
         <div class="card__body grid">
           <label class="field span2">
@@ -101,8 +104,8 @@
         </div>
       </details>
 
-      <!-- STYLE -->
-      <details class="card" open>
+      <!-- STYLE (cinematic only) -->
+      <details class="card" id="card-style" data-kind-only="shots" open>
         <summary class="card__head"><span class="card__num">03</span> Look &amp; Style</summary>
         <div class="card__body grid">
           <label class="field span2">
@@ -120,9 +123,18 @@
         </div>
       </details>
 
-      <!-- SHOTS -->
+      <!-- CUSTOM FIELDS (editable placeholder tokens) -->
+      <details class="card" id="card-fields" open>
+        <summary class="card__head"><span class="card__num">04</span> Fields <small>editable placeholder tokens</small></summary>
+        <div class="card__body">
+          <div id="fields"></div>
+          <button class="btn btn--ghost btn--wide" id="btn-add-field">＋ Add field</button>
+        </div>
+      </details>
+
+      <!-- SHOTS / SECTIONS -->
       <details class="card" open>
-        <summary class="card__head"><span class="card__num">04</span> Shots <small id="shot-count"></small></summary>
+        <summary class="card__head"><span class="card__num">05</span> <span id="blocks-label">Shots</span> <small id="shot-count"></small></summary>
         <div class="card__body">
           <div id="shots"></div>
           <button class="btn btn--ghost btn--wide" id="btn-add-shot">＋ Add shot</button>
@@ -193,6 +205,47 @@
           <textarea data-shot-field="dialogue" rows="2" placeholder="'Four stars.'"></textarea>
         </label>
       </div>
+    </div>
+  </template>
+
+  <!-- section card template (sections-kind templates) -->
+  <template id="section-template">
+    <div class="shot" data-shot>
+      <div class="shot__bar">
+        <span class="shot__num"></span>
+        <input class="shot__title" data-shot-field="title" placeholder="SECTION HEADING" />
+        <div class="shot__actions">
+          <button class="iconbtn" data-shot-act="up" title="Move up">↑</button>
+          <button class="iconbtn" data-shot-act="down" title="Move down">↓</button>
+          <button class="iconbtn" data-shot-act="dup" title="Duplicate">⧉</button>
+          <button class="iconbtn iconbtn--danger" data-shot-act="del" title="Delete">✕</button>
+        </div>
+      </div>
+      <div class="shot__grid">
+        <label class="field span2">
+          <span>Content <small>(supports tokens)</small></span>
+          <textarea data-shot-field="action" rows="4" placeholder="Section content…"></textarea>
+        </label>
+      </div>
+    </div>
+  </template>
+
+  <!-- custom field row template -->
+  <template id="field-template">
+    <div class="frow" data-field>
+      <label class="field">
+        <span>Label</span>
+        <input data-field-prop="label" placeholder="Opening date" />
+      </label>
+      <label class="field">
+        <span>Token</span>
+        <input class="frow__key" data-field-prop="key" placeholder="openingDate" />
+      </label>
+      <label class="field frow__val">
+        <span>Value</span>
+        <input data-field-prop="value" placeholder="25th July 2026" />
+      </label>
+      <button class="iconbtn iconbtn--danger frow__del" data-field-act="del" title="Delete field">✕</button>
     </div>
   </template>
 

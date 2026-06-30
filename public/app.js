@@ -174,12 +174,22 @@ function renderFields() {
   });
 }
 function renderPresetsMenu() {
-  $('#presets-menu').innerHTML = PRESETS.map((p) => {
+  const menu = $('#presets-menu');
+  menu.innerHTML = PRESETS.map((p) => {
     const thumb = p.preview
       ? `<img class="preset__thumb" src="${escapeHtml(p.preview)}" alt="" loading="lazy" />`
       : `<span class="preset__thumb preset__thumb--ph">${p.kind === 'sections' ? '🖼️' : '🎬'}</span>`;
-    return `<button class="preset" data-preset="${escapeHtml(p.id)}" title="Load this starter prompt">${thumb}<span class="preset__name">${escapeHtml(p.name)}</span></button>`;
+    return `<button class="preset" data-preset="${escapeHtml(p.id)}" data-kind="${escapeHtml(p.kind)}" title="Load this starter prompt">${thumb}<span class="preset__name">${escapeHtml(p.name)}</span></button>`;
   }).join('');
+  // graceful fallback: if a preview image is missing/broken, show the emoji placeholder
+  $$('img.preset__thumb', menu).forEach((img) => {
+    img.addEventListener('error', () => {
+      const ph = document.createElement('span');
+      ph.className = 'preset__thumb preset__thumb--ph';
+      ph.textContent = img.closest('.preset')?.dataset.kind === 'sections' ? '🖼️' : '🎬';
+      img.replaceWith(ph);
+    }, { once: true });
+  });
 }
 
 /* ---------- state load ---------- */

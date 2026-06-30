@@ -325,6 +325,6 @@ function winterJacketState() {
    `preview` is an optional thumbnail image shown in the dropdown. */
 const PRESETS = [
   { id: 'film-critic', name: 'Film Critic — Granola Bar (video · 6 shots)', kind: 'shots', build: exampleState },
-  { id: 'grocery-poster', name: 'Grocery Store Grand Opening (poster · image)', kind: 'sections', build: groceryPosterState },
+  { id: 'grocery-poster', name: 'Grocery Store Grand Opening (poster · image)', kind: 'sections', preview: 'presets/grocery.svg', build: groceryPosterState },
   { id: 'thermal-jacket', name: 'Winter Jacket — Thermal Split (poster · image)', kind: 'sections', preview: 'presets/summit-glide.svg', build: winterJacketState },
 ];

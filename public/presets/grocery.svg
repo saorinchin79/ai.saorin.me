@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 160" width="90" height="160" role="img" aria-label="Grocery store grand opening poster">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbf6ec"/><stop offset="1" stop-color="#eef3e6"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f8f4e"/><stop offset="1" stop-color="#15703d"/>
+    </linearGradient>
+  </defs>
+  <rect width="90" height="160" fill="url(#bg)"/>
+  <!-- top green band -->
+  <rect x="0" y="0" width="90" height="34" fill="url(#band)"/>
+  <text x="45" y="15" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="800" fill="#fff" letter-spacing="0.5">GRAND</text>
+  <text x="45" y="27" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="800" fill="#ffd23f" letter-spacing="0.5">OPENING</text>
+  <!-- shopping cart -->
+  <g stroke="#15703d" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 66 h6 l7 33 h27 l7 -22 H33"/>
+  </g>
+  <!-- groceries in cart -->
+  <circle cx="42" cy="74" r="7" fill="#e2483d"/>
+  <circle cx="56" cy="74" r="7" fill="#f5a524"/>
+  <circle cx="49" cy="68" r="6" fill="#7bbf3a"/>
+  <rect x="60" y="66" width="9" height="14" rx="2" fill="#4da3ff"/>
+  <circle cx="40" cy="104" r="3.2" fill="#15703d"/>
+  <circle cx="62" cy="104" r="3.2" fill="#15703d"/>
+  <!-- leaf accents -->
+  <path d="M14 120 q10 -8 20 0 q-10 8 -20 0 Z" fill="#7bbf3a" opacity="0.85"/>
+  <path d="M76 132 q-10 -8 -20 0 q10 8 20 0 Z" fill="#1f8f4e" opacity="0.8"/>
+  <text x="45" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="7.5" font-weight="700" fill="#15703d" letter-spacing="1">SHOP · SAVE · LIVE</text>
+</svg>

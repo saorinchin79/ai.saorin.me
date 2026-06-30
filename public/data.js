@@ -278,8 +278,53 @@ function groceryPosterState() {
   };
 }
 
-/* Built-in preset library (the "▤ Library" of starter prompts) */
+/* ---- Sections-kind preset: Winter jacket thermal-split poster ---- */
+function winterJacketState() {
+  return {
+    meta: {
+      category: 'Poster Design Prompt',
+      kind: 'sections',
+      brand: '',
+      duration: '',
+      verdict: '',
+      refLabel: '',
+      concept: 'A premium 9:16 winter jacket advertising poster.',
+    },
+    subjects: { character: '', object: '', scene: '', background: '', surface: '' },
+    style: { grade: '', fps: '', lens: '' },
+    fields: [
+      newField({ label: 'Headline', key: 'headline', value: 'STAY WARM WHERE IT MATTERS' }),
+      newField({ label: 'Brand', key: 'brand', value: 'SUMMIT GLIDE' }),
+    ],
+    shots: [
+      newShot({
+        title: 'Main Subject',
+        action: 'A premium outdoor jacket displayed in the center.',
+      }),
+      newShot({
+        title: 'Composition',
+        action:
+          'The composition is split naturally. One side appears as normal ultra-realistic photography. The other side ' +
+          'appears through a professional thermal camera visualization. The jacket glows with warm heat signatures while ' +
+          'the freezing environment remains icy blue.',
+      }),
+      newShot({
+        title: 'Typography',
+        action: '"{{headline}}"',
+      }),
+      newShot({
+        title: 'Style',
+        action:
+          'Scientific visualization. Premium outdoor campaign. Minimal editorial advertising. Ultra detailed. 8K masterpiece.',
+      }),
+    ],
+  };
+}
+
+/* Built-in preset library (the "✦ Presets" of starter prompts).
+   `preview` is an optional thumbnail image shown in the dropdown. */
 const PRESETS = [
   { id: 'film-critic', name: 'Film Critic — Granola Bar (video · 6 shots)', kind: 'shots', build: exampleState },
   { id: 'grocery-poster', name: 'Grocery Store Grand Opening (poster · image)', kind: 'sections', build: groceryPosterState },
+  { id: 'thermal-jacket', name: 'Winter Jacket — Thermal Split (poster · image)', kind: 'sections', preview: 'presets/summit-glide.svg', build: winterJacketState },
 ];

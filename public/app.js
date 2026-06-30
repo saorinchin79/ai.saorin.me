@@ -174,9 +174,12 @@ function renderFields() {
   });
 }
 function renderPresetsMenu() {
-  $('#presets-menu').innerHTML = PRESETS.map(
-    (p) => `<div class="lib__item"><button class="lib__load" data-preset="${p.id}" title="Load this starter prompt">${escapeHtml(p.name)}</button></div>`
-  ).join('');
+  $('#presets-menu').innerHTML = PRESETS.map((p) => {
+    const thumb = p.preview
+      ? `<img class="preset__thumb" src="${escapeHtml(p.preview)}" alt="" loading="lazy" />`
+      : `<span class="preset__thumb preset__thumb--ph">${p.kind === 'sections' ? '🖼️' : '🎬'}</span>`;
+    return `<button class="preset" data-preset="${escapeHtml(p.id)}" title="Load this starter prompt">${thumb}<span class="preset__name">${escapeHtml(p.name)}</span></button>`;
+  }).join('');
 }
 
 /* ---------- state load ---------- */

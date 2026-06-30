@@ -89,6 +89,22 @@ body {
 }
 .lib__del:hover { color: var(--danger); background: rgba(224,102,102,.12); }
 
+/* preset items (with preview thumbnail) */
+#presets-menu { min-width: 300px; }
+.preset {
+  display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+  background: transparent; border: 0; border-radius: 9px; padding: 8px; cursor: pointer; color: var(--text);
+}
+.preset:hover { background: var(--accent-soft); }
+.preset__thumb {
+  flex: 0 0 auto; width: 40px; height: 64px; border-radius: 7px; object-fit: cover;
+  border: 1px solid var(--line-2); background: var(--bg);
+  display: grid; place-items: center; font-size: 19px;
+}
+.preset__thumb--ph { color: var(--muted); }
+.preset__name { font-size: 13px; line-height: 1.35; }
+.preset:hover .preset__name { color: var(--accent-2); }
+
 /* ---------- token bar ---------- */
 .tokenbar {
   display: flex; align-items: center; gap: 7px; flex-wrap: wrap;

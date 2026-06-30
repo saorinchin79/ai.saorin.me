@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 160" width="90" height="160" role="img" aria-label="Summit Glide thermal jacket poster">
+  <defs>
+    <linearGradient id="cold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4658"/><stop offset="0.55" stop-color="#1d2733"/><stop offset="1" stop-color="#0b1018"/>
+    </linearGradient>
+    <linearGradient id="thermal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd23f"/><stop offset="0.35" stop-color="#ff7a18"/><stop offset="0.7" stop-color="#c01e8f"/><stop offset="1" stop-color="#1c3fb0"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#ffcf6b" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="90" height="160" fill="#0b1018"/>
+  <rect x="0" y="0" width="45" height="160" fill="url(#cold)"/>
+  <rect x="45" y="0" width="45" height="160" fill="url(#thermal)"/>
+  <!-- mountain silhouette -->
+  <path d="M0 70 L20 40 L34 58 L48 30 L66 64 L90 44 L90 92 L0 92 Z" fill="#000" opacity="0.28"/>
+  <!-- jacket abstraction (center) -->
+  <path d="M45 52 q-16 4 -18 20 l-3 46 q11 5 21 5 l0 -71 Z" fill="#11161f" opacity="0.85"/>
+  <path d="M45 52 q16 4 18 20 l3 46 q-11 5 -21 5 l0 -71 Z" fill="#ff8a1a" opacity="0.9"/>
+  <rect x="44" y="50" width="2" height="74" fill="url(#glow)"/>
+  <!-- brand -->
+  <text x="45" y="138" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="800" fill="#fff" letter-spacing="1.5">SUMMIT</text>
+  <text x="45" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" font-weight="600" fill="#cdd6e4" letter-spacing="3">GLIDE</text>
+</svg>

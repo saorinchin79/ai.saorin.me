@@ -95,6 +95,13 @@ input,select,textarea{font-family:'Space Grotesk','Noto Sans Khmer',sans-serif}
               </select>
             </label>
             </sc-if>
+            <sc-if value="{{isVideo}}" hint-placeholder-val="{{ false }}">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.anim}}
+              <select value="{{anim}}" onChange="{{onAnim}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{animOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            </sc-if>
             <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.mood}}
               <select value="{{mood}}" onChange="{{onMood}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
                 <sc-for list="{{moodOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
@@ -116,6 +123,9 @@ input,select,textarea{font-family:'Space Grotesk','Noto Sans Khmer',sans-serif}
               </select>
             </label>
           </div>
+          <sc-if value="{{showAnimNote}}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:11.5px;line-height:1.6;color:#8b93a1;background:#0d0f12;border:1px solid #262b33;border-left:2px solid #c8f04a;border-radius:8px;padding:9px 11px">{{animNote}}</div>
+          </sc-if>
           <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.negative}} <span style="color:#8b93a1;font-weight:400">{{t.negativeHint}}</span>
             <input value="{{negative}}" onChange="{{onNegative}}" placeholder="{{t.phNeg}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:10px 12px;color:#e8eaed;font-size:14px;outline:none;width:100%;min-width:0;box-sizing:border-box" style-focus="border-color:#c8f04a"></input>
           </label>
@@ -185,6 +195,78 @@ const OPTS = {
   quality: ['None','Ultra-detailed, sharp focus','8K, high dynamic range','Award-winning photography','Masterpiece, best quality','Clean render, physically based'],
   ar: ['16:9','1:1','9:16','4:3','3:2','21:9','2.39:1']
 };
+
+/* Animation effects for video models.
+   Two kinds live in one list. Pika, Kling and Higgsfield ship named presets you
+   pick in their UI; Veo, Seedance and Runway take no presets at all and need the
+   motion described in words. So every entry carries both: `v` is the name to
+   choose in a preset UI, `p` is the sentence written into the prompt for
+   everything else. `on` names the platforms where it exists as a real preset —
+   empty means it is prompt-driven only and works anywhere. */
+const ANIM = [
+  {v:'None', km:'គ្មាន', g:'', p:'', on:''},
+
+  {v:'Squish', km:'ច្របាច់ឱ្យសំប៉ែត', g:'Transform', on:'Pika, Kling', p:'the subject is squeezed and squishes like soft rubber, then springs back into shape'},
+  {v:'Inflate', km:'ប៉ោងឡើង', g:'Transform', on:'Pika, Kling', p:'the subject inflates and balloons outward, its surface stretching taut'},
+  {v:'Deflate', km:'ស្រាកចុះ', g:'Transform', on:'Pika', p:'the subject deflates, collapsing inward as the air escapes'},
+  {v:'Melt', km:'រលាយ', g:'Transform', on:'Pika', p:'the subject slowly melts down into a glossy liquid pool'},
+  {v:'Liquify', km:'ក្លាយជាវត្ថុរាវ', g:'Transform', on:'', p:'the subject turns to flowing liquid, ripples through the air and reforms'},
+  {v:'Petrify', km:'ក្លាយជាថ្ម', g:'Transform', on:'', p:'the subject turns to grey stone, hairline cracks spreading across the surface'},
+  {v:'Freeze over', km:'កកជាទឹកកក', g:'Transform', on:'', p:'frost creeps across the subject until it is fully encased in ice'},
+  {v:'Cake-ify', km:'ក្លាយជានំ', g:'Transform', on:'Pika', p:'a knife slices through and the subject is revealed to be a cake inside'},
+  {v:'Toy-ify', km:'ក្លាយជាតុក្កតា', g:'Transform', on:'Kling', p:'the subject becomes a glossy miniature plastic toy figure'},
+  {v:'Fur growth', km:'ដុះរោម', g:'Transform', on:'Kling', p:'soft fur grows outward across the subject until it is completely covered'},
+  {v:'Morph', km:'បំប្លែងទម្រង់', g:'Transform', on:'Higgsfield', p:'the subject smoothly morphs into an entirely different form'},
+  {v:'Jelly wobble', km:'ញាប់ៗដូចចាហួយ', g:'Transform', on:'Higgsfield', p:'the subject wobbles and jiggles like jelly with every small movement'},
+
+  {v:'Explode', km:'ផ្ទុះ', g:'Destruction', on:'Pika, Higgsfield', p:'the subject explodes outward in a violent burst of debris'},
+  {v:'Disintegrate', km:'រលាយជាធូលី', g:'Destruction', on:'Higgsfield', p:'the subject disintegrates into drifting particles of ash that scatter on the air'},
+  {v:'Shatter', km:'បែកខ្ទេច', g:'Destruction', on:'', p:'the subject shatters like glass into spinning shards'},
+  {v:'Crush', km:'កម្ទេច', g:'Destruction', on:'Pika', p:'an unseen force presses down and crushes the subject flat'},
+  {v:'Crumble', km:'រេចរឹល', g:'Destruction', on:'Pika', p:'the subject crumbles into dust from the edges inward'},
+  {v:'Tear apart', km:'ហែកជាពីរ', g:'Destruction', on:'Pika', p:'the subject tears cleanly apart down the middle'},
+  {v:'Peel', km:'បកសំបក', g:'Destruction', on:'Pika', p:'the outer layer peels away to reveal what is underneath'},
+  {v:'Dissolve', km:'រសាយបាត់', g:'Destruction', on:'Pika', p:'the subject dissolves away into nothing'},
+  {v:'Ignite', km:'ឆេះ', g:'Destruction', on:'Higgsfield', p:'flames catch and race across the subject, consuming it'},
+
+  {v:'Ta-da reveal', km:'បើកបង្ហាញភ្លាម', g:'Reveal', on:'Pika', p:'a cloth is whipped away and the subject is revealed with a flourish'},
+  {v:'Smoke reveal', km:'ផ្សែងរាយបង្ហាញ', g:'Reveal', on:'', p:'thick smoke drifts apart to reveal the subject standing in the clear'},
+  {v:'Light-streak wipe', km:'ពន្លឺបោសឆ្លង', g:'Reveal', on:'', p:'a streak of light wipes across the frame and the scene changes behind it'},
+  {v:'Match cut', km:'កាត់ផ្គូផ្គង', g:'Reveal', on:'', p:'the silhouette of the subject matches into the shape of the next scene'},
+  {v:'Portal step', km:'ឆ្លងកាត់ទ្វារ', g:'Reveal', on:'', p:'the subject steps through a glowing portal into a completely different environment'},
+  {v:'Costume change', km:'ប្ដូរសម្លៀកបំពាក់', g:'Reveal', on:'Higgsfield', p:'the subject spins once and their outfit transforms mid-turn'},
+
+  {v:'Levitate', km:'អណ្ដែតឡើង', g:'Physics', on:'Pika, Higgsfield', p:'the subject rises and floats weightlessly off the ground'},
+  {v:'Zero gravity', km:'គ្មានទំនាញ', g:'Physics', on:'', p:'gravity releases and everything in frame drifts weightlessly'},
+  {v:'Shockwave', km:'រលកប៉ះទង្គិច', g:'Physics', on:'', p:'a shockwave ripples outward, bending and distorting everything in its path'},
+  {v:'Wind gust', km:'ខ្យល់បក់ខ្លាំង', g:'Physics', on:'', p:'a strong gust tears through, whipping hair and fabric sideways'},
+  {v:'Water splash', km:'ទឹកសាច', g:'Physics', on:'', p:'water splashes up around the subject in slow, heavy arcs'},
+  {v:'Electric surge', km:'ចរន្តអគ្គិសនី', g:'Physics', on:'', p:'arcs of electricity crackle and snap across the subject'},
+  {v:'Magnetic pull', km:'ទាញដោយមេដែក', g:'Physics', on:'', p:'loose objects are dragged toward the subject and begin to orbit it'},
+
+  {v:'Bullet time', km:'ពេលវេលាឈប់', g:'Camera', on:'Higgsfield', p:'time freezes mid-action and the camera arcs slowly around the subject'},
+  {v:'Dolly zoom', km:'ហ្ស៊ូមបញ្ច្រាស', g:'Camera', on:'Higgsfield', p:'the camera dollies in while zooming out, warping the background around the subject'},
+  {v:'Crash zoom', km:'ហ្ស៊ូមរហ័ស', g:'Camera', on:'Higgsfield', p:'the camera snaps rapidly in toward the subject'},
+  {v:'360° orbit', km:'វិលជុំ ៣៦០°', g:'Camera', on:'Higgsfield', p:'the camera orbits a full circle around the subject'},
+  {v:'Rack focus', km:'ប្ដូរចំណុចច្បាស់', g:'Camera', on:'Higgsfield', p:'focus pulls from the blurred foreground back to the subject'},
+  {v:'Snorricam', km:'កាមេរ៉ាភ្ជាប់តួ', g:'Camera', on:'Higgsfield', p:'the camera is locked to the subject while the world swings wildly behind them'},
+  {v:'Camera shake', km:'កាមេរ៉ាញ័រ', g:'Camera', on:'', p:'the camera jolts and shakes with every impact'},
+
+  {v:'Slow motion', km:'ចលនាយឺត', g:'Time', on:'', p:'the action plays out in dreamlike slow motion'},
+  {v:'Speed ramp', km:'បង្កើនល្បឿនបន្តិចម្ដង', g:'Time', on:'Higgsfield', p:'the action ramps from slow motion up to full speed in one continuous move'},
+  {v:'Time-lapse', km:'ពន្លឿនពេលវេលា', g:'Time', on:'', p:'time races forward, light and shadow sweeping across the scene'},
+  {v:'Freeze frame', km:'បង្កកភាព', g:'Time', on:'', p:'the action snaps to a frozen still frame'},
+  {v:'Reverse', km:'ដើរថយក្រោយ', g:'Time', on:'', p:'the action rewinds, everything moving backwards'},
+  {v:'Age progression', km:'ចាស់ទៅតាមអាយុ', g:'Time', on:'', p:'the subject visibly ages, years passing across their face'},
+
+  {v:'Embrace', km:'អោប', g:'Character', on:'Kling', p:'the two subjects step together and embrace'},
+  {v:'Muscle surge', km:'សាច់ដុំប៉ោង', g:'Character', on:'Kling', p:"the subject's muscles swell and surge with sudden power"},
+  {v:'Clone split', km:'បំបែកជាច្រើន', g:'Character', on:'', p:'the subject splits into several identical copies that move apart'},
+  {v:'Impact recoil', km:'ថយក្រោយពេលប៉ះ', g:'Character', on:'Higgsfield', p:"the subject's head and shoulders snap back from a heavy impact"},
+  {v:'Dizzy spin', km:'វិលមុខ', g:'Character', on:'Kling', p:'the subject spins and staggers, visibly dizzy'},
+  {v:'Bloom burst', km:'ផ្ការរីកផ្ទុះ', g:'Character', on:'Kling', p:'flowers bloom and burst outward all around the subject'}
+];
+const ANIM_GROUP_KM = {Transform:'បំប្លែង', Destruction:'បំផ្លាញ', Reveal:'បង្ហាញ', Physics:'រូបវិទ្យា', Camera:'កាមេរ៉ា', Time:'ពេលវេលា', Character:'តួអង្គ'};
 const KM_OPT = {
   'None':'គ្មាន','Photorealistic':'សមជាក់ស្ដែង','Cinematic film still':'ឈុតខ្សែភាពយន្ត','Studio product shot':'ថតផលិតផលក្នុងស្ទូឌីយោ','Anime':'អានីមេ','3D render (Octane)':'បង្ហាញ 3D (Octane)','Oil painting':'គំនូរប្រេង','Watercolor':'គំនូរពណ៌ទឹក','Cyberpunk':'ស៊ីប៊ឺផាំង','Minimalist flat illustration':'រូបគំនូររាបស្មើសាមញ្ញ','Documentary photography':'រូបថតឯកសារ',
   'Golden hour':'ពន្លឺម៉ោងមាស','Soft studio softbox':'ពន្លឺស្ទូឌីយោទន់','Dramatic rim light':'ពន្លឺគែមខ្លាំង','Neon glow':'ពន្លឺនីអុង','Overcast diffuse':'មេឃស្រទុំ ពន្លឺរាយប៉ាយ','Hard midday sun':'ពន្លឺថ្ងៃត្រង់ខ្លាំង','Candlelight':'ពន្លឺទៀន','Volumetric god rays':'កាំរស្មីពន្លឺធ្លាយ',
@@ -199,22 +281,26 @@ const T = {
     title:'AI Generator Template', image:'Image', video:'Video',
     core:'CORE SUBJECT', object:'Object', scene:'Scene', background:'Background',
     phObj:'e.g. a vintage red motorcycle', phScene:'e.g. parked on a rain-soaked Tokyo street', phBg:'e.g. neon signs blurred in the distance', phNeg:'e.g. blurry, text, watermark, extra limbs',
-    enhancers:'ENHANCERS', style:'Art style', lighting:'Lighting', camera:'Camera / lens', motion:'Camera motion', mood:'Mood', palette:'Color palette', quality:'Quality boost', ar:'Aspect ratio',
+    enhancers:'ENHANCERS', style:'Art style', lighting:'Lighting', camera:'Camera / lens', motion:'Camera motion', anim:'Animation effect', mood:'Mood', palette:'Color palette', quality:'Quality boost', ar:'Aspect ratio',
     negative:'Negative prompt', negativeHint:'(what to avoid)',
     targetModel:'TARGET MODEL', copy:'Copy prompt', copied:'✓ Copied', reset:'Reset', chars:'chars',
     tips:'EFFECTIVENESS TECHNIQUES', history:'HISTORY', clear:'clear',
     historyEmpty:'Copied prompts land here. Click one to copy it again.',
+    animNative:'Named preset on', animAnywhere:'Prompt-driven — works on any video model',
+    animReads:'written into the prompt as',
     emptyPrompt:'Fill in Object, Scene and Background to build your prompt…'
   },
   km: {
     title:'គំរូបង្កើត Prompt AI', image:'រូបភាព', video:'វីដេអូ',
     core:'ប្រធានបទស្នូល', object:'វត្ថុ', scene:'ឈុតឆាក', background:'ផ្ទៃខាងក្រោយ',
     phObj:'ឧ. ម៉ូតូបុរាណពណ៌ក្រហម', phScene:'ឧ. ចតនៅផ្លូវតូក្យូពេលភ្លៀង', phBg:'ឧ. ផ្លាកនីអុងព្រិលៗពីចម្ងាយ', phNeg:'ឧ. ព្រិល, អក្សរ, watermark',
-    enhancers:'ឧបករណ៍បន្ថែម', style:'រចនាបថសិល្បៈ', lighting:'ពន្លឺ', camera:'កាមេរ៉ា / កែវថត', motion:'ចលនាកាមេរ៉ា', mood:'អារម្មណ៍', palette:'ក្ដារពណ៌', quality:'បង្កើនគុណភាព', ar:'សមាមាត្រ',
+    enhancers:'ឧបករណ៍បន្ថែម', style:'រចនាបថសិល្បៈ', lighting:'ពន្លឺ', camera:'កាមេរ៉ា / កែវថត', motion:'ចលនាកាមេរ៉ា', anim:'បែបផែនចលនា', mood:'អារម្មណ៍', palette:'ក្ដារពណ៌', quality:'បង្កើនគុណភាព', ar:'សមាមាត្រ',
     negative:'Prompt អវិជ្ជមាន', negativeHint:'(អ្វីដែលត្រូវជៀសវាង)',
     targetModel:'ម៉ូដែលគោលដៅ', copy:'ចម្លង Prompt', copied:'✓ បានចម្លង', reset:'កំណត់ឡើងវិញ', chars:'តួអក្សរ',
     tips:'បច្ចេកទេសប្រសិទ្ធភាព', history:'ប្រវត្តិ', clear:'សម្អាត',
     historyEmpty:'Prompt ដែលបានចម្លងនឹងបង្ហាញនៅទីនេះ។ ចុចមួយដើម្បីចម្លងម្ដងទៀត។',
+    animNative:'Preset ដើមមាននៅ', animAnywhere:'ដំណើរការតាម prompt — ប្រើបានគ្រប់ម៉ូដែលវីដេអូ',
+    animReads:'សរសេរក្នុង prompt ជា',
     emptyPrompt:'បំពេញ វត្ថុ ឈុតឆាក និងផ្ទៃខាងក្រោយ ដើម្បីបង្កើត prompt…'
   }
 };
@@ -253,7 +339,7 @@ const MODELS = {
 };
 class Component extends DCLogic {
   state = { lang:'en', mode:'image', model:'Midjourney', copied:false, history:[],
-    f:{obj:'',scene:'',bg:'',style:'None',lighting:'None',camera:'None',motion:'None',mood:'None',palette:'None',quality:'None',negative:'',ar:'16:9'} };
+    f:{obj:'',scene:'',bg:'',style:'None',lighting:'None',camera:'None',motion:'None',anim:'None',mood:'None',palette:'None',quality:'None',negative:'',ar:'16:9'} };
   componentDidMount(){
     try{ const h = JSON.parse(localStorage.getItem('aigen_history')||'[]'); if(Array.isArray(h)) this.setState({history:h}); }catch(e){}
     try{ const l = localStorage.getItem('aigen_lang'); if(l==='km'||l==='en') this.setState({lang:l}); }catch(e){}
@@ -302,6 +388,8 @@ class Component extends DCLogic {
       if(f.obj) seg.push(f.obj+(f.scene?' '+f.scene:''));
       else if(f.scene) seg.push(f.scene);
       if(f.bg) seg.push('In the background, '+f.bg);
+      const fx=ANIM.find(a=>a.v===f.anim);
+      if(fx&&fx.p) seg.push('Effect: '+fx.p);
       if(f.motion&&f.motion!=='None') seg.push('Camera: '+f.motion.toLowerCase()+(f.camera&&f.camera!=='None'?', '+f.camera.toLowerCase():''));
       else if(f.camera&&f.camera!=='None') seg.push('Camera: '+f.camera.toLowerCase());
       ['lighting','mood','palette','style','quality'].forEach(k=>{ if(f[k]&&f[k]!=='None') seg.push(f[k]+(k==='lighting'?' lighting':'')); });
@@ -340,9 +428,27 @@ class Component extends DCLogic {
     const km=this.state.lang==='km';
     return list.map(o=>({v:o, l:km?(KM_OPT[o]||o):o}));
   }
+  animOpts(){
+    const km=this.state.lang==='km';
+    // Group prefix keeps a 50-entry list scannable in a plain <select>.
+    return ANIM.map(a=>{
+      const name=km?(a.km||a.v):a.v;
+      if(!a.g) return {v:a.v, l:name};
+      const g=km?(ANIM_GROUP_KM[a.g]||a.g):a.g;
+      return {v:a.v, l:g+' · '+name};
+    });
+  }
+  animNote(){
+    const t=T[this.state.lang];
+    const a=ANIM.find(x=>x.v===this.state.f.anim&&x.p);
+    if(!a) return '';
+    const where=a.on?(t.animNative+' '+a.on):t.animAnywhere;
+    return where+' — '+t.animReads+' "'+a.p+'".';
+  }
   renderVals(){
     const s=this.state, f=s.f, lang=s.lang, t=T[lang];
     const {model, text}=this.build();
+    const fx=ANIM.find(a=>a.v===f.anim&&a.p);
     const tab=(on)=>on?{bg:'#c8f04a',fg:'#0d0f12'}:{bg:'transparent',fg:'#8b93a1'};
     const setMode=(m)=>()=>this.setState({mode:m, model:MODELS[m][0].name, copied:false});
     const models=MODELS[s.mode].map(m=>{
@@ -356,14 +462,15 @@ class Component extends DCLogic {
       t, langLabel:lang==='en'?'ខ្មែរ':'EN', isKhmer:lang==='km',
       toggleLang:()=>{ const l=lang==='en'?'km':'en'; try{localStorage.setItem('aigen_lang',l);}catch(e){} this.setState({lang:l}); },
       tipItems:TIPS[lang],
-      obj:f.obj, scene:f.scene, bg:f.bg, style:f.style, lighting:f.lighting, camera:f.camera, motion:f.motion,
+      obj:f.obj, scene:f.scene, bg:f.bg, style:f.style, lighting:f.lighting, camera:f.camera, motion:f.motion, anim:f.anim,
       mood:f.mood, palette:f.palette, quality:f.quality, negative:f.negative, ar:f.ar,
       onObj:this.setF('obj'), onScene:this.setF('scene'), onBg:this.setF('bg'), onStyle:this.setF('style'),
-      onLighting:this.setF('lighting'), onCamera:this.setF('camera'), onMotion:this.setF('motion'),
+      onLighting:this.setF('lighting'), onCamera:this.setF('camera'), onMotion:this.setF('motion'), onAnim:this.setF('anim'),
       onMood:this.setF('mood'), onPalette:this.setF('palette'), onQuality:this.setF('quality'),
       onNegative:this.setF('negative'), onAr:this.setF('ar'),
       styleOpts:this.opts(OPTS.style), lightOpts:this.opts(OPTS.light), camOpts:this.opts(OPTS.cam),
-      motionOpts:this.opts(OPTS.motion), moodOpts:this.opts(OPTS.mood), paletteOpts:this.opts(OPTS.palette),
+      motionOpts:this.opts(OPTS.motion), animOpts:this.animOpts(), showAnimNote:s.mode==='video'&&!!fx, animNote:this.animNote(),
+      moodOpts:this.opts(OPTS.mood), paletteOpts:this.opts(OPTS.palette),
       qualityOpts:this.opts(OPTS.quality), arOpts:OPTS.ar.map(o=>({v:o,l:o})),
       isVideo:s.mode==='video',
       setImageMode:setMode('image'), setVideoMode:setMode('video'),
@@ -371,7 +478,7 @@ class Component extends DCLogic {
       vidTabBg:tab(s.mode==='video').bg, vidTabFg:tab(s.mode==='video').fg,
       models, modelNote:model.note[lang], prompt:text, charCount:text.length,
       copy:()=>this.copy(), copyLabel:s.copied?t.copied:t.copy,
-      clearAll:()=>this.setState({f:{obj:'',scene:'',bg:'',style:'None',lighting:'None',camera:'None',motion:'None',mood:'None',palette:'None',quality:'None',negative:'',ar:'16:9'}, copied:false}),
+      clearAll:()=>this.setState({f:{obj:'',scene:'',bg:'',style:'None',lighting:'None',camera:'None',motion:'None',anim:'None',mood:'None',palette:'None',quality:'None',negative:'',ar:'16:9'}, copied:false}),
       historyItems, hasHistory:s.history.length>0, noHistory:s.history.length===0,
       clearHistory:()=>{ this.setState({history:[]}); try{localStorage.setItem('aigen_history','[]');}catch(e){} },
       showTips:this.props.showTips ?? true

@@ -32,14 +32,21 @@ app.get('/api/health', (_req, res) => {
   res.json({ ok: true, app: 'ai-generator-template', uptime: process.uptime() });
 });
 
-// Single-page app: anything that isn't a real file falls back to the generator.
+// Single-page app: unknown *navigation* paths render the generator. Anything
+// carrying a file extension is an asset request — those must 404 rather than
+// silently resolve to the HTML shell and report a phantom 200.
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/')) return next();
+  if (req.path.startsWith('/api/') || path.extname(req.path)) return next();
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
-app.use((_req, res) => res.status(404).json({ error: 'not found' }));
+app.use((req, res) => {
+  res.status(404);
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.path.startsWith('/api/')) return res.json({ error: 'not found' });
+  res.type('txt').send('404 Not Found');
+});
 
 app.listen(PORT, () => {
   console.log(`\n  ✦  AI Generator Template`);

@@ -1,7 +1,7 @@
 {
-  "name": "ai-prompt-template-generator",
-  "version": "1.0.0",
-  "description": "Form-driven cinematic AI prompt template generator. Edit Character / Object / Scene / Background as global tokens and compose multi-shot video prompts.",
+  "name": "ai-generator-template",
+  "version": "2.0.0",
+  "description": "Form-driven AI prompt studio. Compose image and video prompts from style / lighting / camera / motion / mood controls, target a specific model, and copy the result. Bilingual EN / ខ្មែរ.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,13 +10,20 @@
   "keywords": [
     "ai",
     "prompt",
-    "template",
     "generator",
+    "image",
     "video",
-    "cinematic"
+    "midjourney",
+    "flux",
+    "veo",
+    "sora",
+    "khmer"
   ],
   "author": "saorin",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "express": "^4.19.2"
   }

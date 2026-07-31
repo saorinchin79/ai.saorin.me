@@ -1,255 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Prompt Template Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Generator Template — Prompt Studio</title>
+<meta name="description" content="Build production-ready AI image and video prompts from a form. Pick style, lighting, camera, motion, mood and palette, target a specific model (Midjourney, Flux, Veo, Sora, Kling and more), then copy the prompt. English / ភាសាខ្មែរ.">
+<meta name="theme-color" content="#0d0f12">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://ai.saorin.me/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230d0f12'/%3E%3Ctext x='50' y='72' font-size='62' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%23c8f04a'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="./og-image.webp">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ai.saorin.me">
+<meta property="og:url" content="https://ai.saorin.me/">
+<meta property="og:title" content="AI Generator Template — Prompt Studio">
+<meta property="og:description" content="Build production-ready AI image and video prompts from a form. Pick style, lighting, camera, motion, mood and palette, target a specific model (Midjourney, Flux, Veo, Sora, Kling and more), then copy the prompt. English / ភាសាខ្មែរ.">
+<meta property="og:image" content="https://ai.saorin.me/og-image.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI Generator Template — Prompt Studio">
+<meta name="twitter:description" content="Build production-ready AI image and video prompts from a form. Pick style, lighting, camera, motion, mood and palette, target a specific model (Midjourney, Flux, Veo, Sora, Kling and more), then copy the prompt. English / ភាសាខ្មែរ.">
+<meta name="twitter:image" content="https://ai.saorin.me/og-image.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- React 18.3.1 UMD, self-hosted. The dc runtime's loadReactUmd() short-circuits when
+     window.React / window.ReactDOM already exist, so the page never touches unpkg.
+     Both files were byte-verified against the SRI digests baked into support.js. -->
+<script src="./vendor/react.production.min.js"></script>
+<script src="./vendor/react-dom.production.min.js"></script>
+<script src="./support.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand__icon">🎬</span>
-      <div>
-        <h1>AI Prompt Template Generator</h1>
-        <p class="brand__sub">Edit <b>Character</b>, <b>Object</b>, <b>Scene</b> &amp; <b>Background</b> once — they flow into every shot.</p>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Khmer:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0d0f12;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif}
+a{color:#c8f04a}a:hover{color:#e2ff7a}
+input,select,textarea{font-family:'Space Grotesk','Noto Sans Khmer',sans-serif}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#0d0f12;color:#e8eaed;padding:32px 40px;box-sizing:border-box">
+  <div style="max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:24px">
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:#c8f04a">PROMPT STUDIO</div>
+        <h1 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.5px">{{t.title}}</h1>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="display:flex;gap:4px;background:#15181d;border:1px solid #262b33;border-radius:10px;padding:4px">
+          <button onClick="{{setImageMode}}" style="border:none;border-radius:7px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif;background:{{imgTabBg}};color:{{imgTabFg}}">{{t.image}}</button>
+          <button onClick="{{setVideoMode}}" style="border:none;border-radius:7px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif;background:{{vidTabBg}};color:{{vidTabFg}}">{{t.video}}</button>
+        </div>
+        <button onClick="{{toggleLang}}" title="Switch language" style="display:flex;align-items:center;gap:8px;background:#15181d;border:1px solid #3a4150;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;color:#c8f04a;cursor:pointer;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif" style-hover="border-color:#c8f04a">
+          <span style="font-size:14px">🌐</span>{{langLabel}}
+        </button>
+      </div>
+    </header>
+    <div style="display:grid;grid-template-columns:400px 1fr;gap:24px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:20px;background:#15181d;border:1px solid #262b33;border-radius:14px;padding:24px">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8b93a1">01 · {{t.core}}</div>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;min-width:0">{{t.object}}
+            <input value="{{obj}}" onChange="{{onObj}}" placeholder="{{t.phObj}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:10px 12px;color:#e8eaed;font-size:14px;outline:none;width:100%;min-width:0;box-sizing:border-box" style-focus="border-color:#c8f04a"></input>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;min-width:0">{{t.scene}}
+            <input value="{{scene}}" onChange="{{onScene}}" placeholder="{{t.phScene}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:10px 12px;color:#e8eaed;font-size:14px;outline:none;width:100%;min-width:0;box-sizing:border-box" style-focus="border-color:#c8f04a"></input>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;min-width:0">{{t.background}}
+            <input value="{{bg}}" onChange="{{onBg}}" placeholder="{{t.phBg}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:10px 12px;color:#e8eaed;font-size:14px;outline:none;width:100%;min-width:0;box-sizing:border-box" style-focus="border-color:#c8f04a"></input>
+          </label>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8b93a1">02 · {{t.enhancers}}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.style}}
+              <select value="{{style}}" onChange="{{onStyle}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{styleOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.lighting}}
+              <select value="{{lighting}}" onChange="{{onLighting}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{lightOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.camera}}
+              <select value="{{camera}}" onChange="{{onCamera}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{camOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            <sc-if value="{{isVideo}}" hint-placeholder-val="{{ false }}">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.motion}}
+              <select value="{{motion}}" onChange="{{onMotion}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{motionOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            </sc-if>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.mood}}
+              <select value="{{mood}}" onChange="{{onMood}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{moodOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.palette}}
+              <select value="{{palette}}" onChange="{{onPalette}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{paletteOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.quality}}
+              <select value="{{quality}}" onChange="{{onQuality}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{qualityOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.ar}}
+              <select value="{{ar}}" onChange="{{onAr}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:9px 10px;color:#e8eaed;font-size:13px;outline:none;width:100%;min-width:0;box-sizing:border-box">
+                <sc-for list="{{arOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+              </select>
+            </label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;min-width:0">{{t.negative}} <span style="color:#8b93a1;font-weight:400">{{t.negativeHint}}</span>
+            <input value="{{negative}}" onChange="{{onNegative}}" placeholder="{{t.phNeg}}" style="background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:10px 12px;color:#e8eaed;font-size:14px;outline:none;width:100%;min-width:0;box-sizing:border-box" style-focus="border-color:#c8f04a"></input>
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="background:#15181d;border:1px solid #262b33;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8b93a1">03 · {{t.targetModel}}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <sc-for list="{{models}}" as="m" hint-placeholder-count="4">
+              <button onClick="{{m.select}}" style="border:1px solid {{m.bd}};background:{{m.bg}};color:{{m.fg}};border-radius:999px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif">{{m.name}}</button>
+            </sc-for>
+          </div>
+          <div style="font-size:13px;color:#8b93a1;line-height:1.6;border-left:2px solid #c8f04a;padding-left:12px">{{modelNote}}</div>
+          <div style="background:#0d0f12;border:1px solid #262b33;border-radius:10px;padding:18px;font-family:'IBM Plex Mono','Noto Sans Khmer',monospace;font-size:14px;line-height:1.7;color:#d7e6b0;min-height:96px;white-space:pre-wrap;word-break:break-word">{{prompt}}</div>
+          <sc-if value="{{isKhmer}}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12px;color:#8b93a1;line-height:1.5">ℹ️ Prompt ត្រូវបានបង្កើតជាភាសាអង់គ្លេស ព្រោះម៉ូដែល AI ផ្ដល់លទ្ធផលល្អបំផុតជាមួយភាសាអង់គ្លេស។</div>
+          </sc-if>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button onClick="{{copy}}" style="background:#c8f04a;color:#0d0f12;border:none;border-radius:8px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif" style-hover="background:#e2ff7a">{{copyLabel}}</button>
+            <button onClick="{{clearAll}}" style="background:transparent;color:#8b93a1;border:1px solid #262b33;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif" style-hover="color:#e8eaed;border-color:#8b93a1">{{t.reset}}</button>
+            <div style="font-size:12px;color:#8b93a1;font-family:'IBM Plex Mono',monospace">{{charCount}} {{t.chars}}</div>
+          </div>
+        </div>
+        <sc-if value="{{showTips}}" hint-placeholder-val="{{ true }}">
+        <div style="background:#15181d;border:1px solid #262b33;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:12px">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8b93a1">04 · {{t.tips}}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;line-height:1.6;color:#c6ccd6">
+            <sc-for list="{{tipItems}}" as="tip" hint-placeholder-count="6">
+              <div><strong style="color:#c8f04a">{{tip.b}}</strong> {{tip.d}}</div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+        <div style="background:#15181d;border:1px solid #262b33;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8b93a1">05 · {{t.history}}</div>
+            <button onClick="{{clearHistory}}" style="background:transparent;border:none;color:#8b93a1;font-size:12px;cursor:pointer;font-family:'IBM Plex Mono','Noto Sans Khmer',monospace" style-hover="color:#e8eaed">{{t.clear}}</button>
+          </div>
+          <sc-if value="{{hasHistory}}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{historyItems}}" as="h" hint-placeholder-count="2">
+              <button onClick="{{h.use}}" title="Copy again" style="text-align:left;background:#0d0f12;border:1px solid #262b33;border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;font-family:'Space Grotesk','Noto Sans Khmer',sans-serif" style-hover="border-color:#c8f04a">
+                <span style="font-size:11px;color:#c8f04a;font-family:'IBM Plex Mono',monospace">{{h.model}}</span>
+                <span style="font-size:12px;color:#c6ccd6;line-height:1.4">{{h.short}}</span>
+              </button>
+            </sc-for>
+          </div>
+          </sc-if>
+          <sc-if value="{{noHistory}}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:13px;color:#5c6470">{{t.historyEmpty}}</div>
+          </sc-if>
+        </div>
       </div>
     </div>
-    <div class="toolbar">
-      <div class="lib">
-        <button class="btn btn--primary" id="btn-presets" title="Built-in starter prompts">✦ Presets ▾</button>
-        <div class="lib__menu" id="presets-menu" hidden></div>
-      </div>
-      <button class="btn" id="btn-clear" title="Start from a blank slate">＋ New</button>
-      <div class="lib">
-        <button class="btn" id="btn-library" title="Your saved templates">▤ Library</button>
-        <div class="lib__menu" id="lib-menu" hidden></div>
-      </div>
-      <button class="btn" id="btn-save" title="Save current form to your library">⤓ Save</button>
-      <span class="toolbar__sep" aria-hidden="true"></span>
-      <button class="btn" id="btn-export" title="Export this template as a .json file you can share">⤴ Export</button>
-      <button class="btn" id="btn-import" title="Import a template from a .json file">⤵ Import</button>
-      <input type="file" id="file-import" accept="application/json,.json" hidden />
-      <span class="toolbar__sep" aria-hidden="true"></span>
-      <button class="btn btn--primary" id="btn-copy" title="Copy the generated prompt">⧉ Copy Prompt</button>
-      <button class="btn" id="btn-download" title="Download the prompt as .txt">↓ .txt</button>
-    </div>
-  </header>
-
-  <div class="tokenbar" id="tokenbar" title="Click a token to insert it into the field you last edited">
-    <span class="tokenbar__label">Insert token:</span>
-    <!-- token chips injected by JS -->
   </div>
-
-  <main class="layout">
-    <!-- ================= FORM ================= -->
-    <section class="panel form" id="form">
-      <!-- CONCEPT -->
-      <details class="card" open>
-        <summary class="card__head"><span class="card__num">01</span> Concept</summary>
-        <div class="card__body grid">
-          <label class="field span2">
-            <span>Prompt category / heading</span>
-            <input type="text" data-bind="meta.category" placeholder="Marketing and Advertising Prompt" />
-          </label>
-          <label class="field" data-kind-only="shots">
-            <span>Brand name <em>{{brand}}</em></span>
-            <input type="text" data-bind="meta.brand" placeholder="The Natural" />
-          </label>
-          <label class="field" data-kind-only="shots">
-            <span>Total duration <em>{{duration}}</em></span>
-            <input type="text" data-bind="meta.duration" placeholder="25-second" />
-          </label>
-          <label class="field" data-kind-only="shots">
-            <span>Verdict / payoff <em>{{verdict}}</em></span>
-            <input type="text" data-bind="meta.verdict" placeholder="Four stars" />
-          </label>
-          <label class="field" data-kind-only="shots">
-            <span>Image reference label <em>{{ref}}</em></span>
-            <input type="text" data-bind="meta.refLabel" placeholder="Image 1" />
-          </label>
-          <label class="field span2">
-            <span>Concept summary <small>(the opening pitch paragraph — supports tokens)</small></span>
-            <textarea data-bind="meta.concept" rows="5" placeholder="Describe the idea in a sentence or two…"></textarea>
-          </label>
-        </div>
-      </details>
-
-      <!-- SUBJECTS (cinematic only) -->
-      <details class="card card--accent" id="card-subjects" data-kind-only="shots" open>
-        <summary class="card__head"><span class="card__num">02</span> Subjects <small>the global editable fields</small></summary>
-        <div class="card__body grid">
-          <label class="field span2">
-            <span>Character <em>{{character}}</em></span>
-            <textarea data-bind="subjects.character" rows="2" placeholder="A man in his 60s in tweed"></textarea>
-          </label>
-          <label class="field span2">
-            <span>Object / Product <em>{{object}}</em></span>
-            <textarea data-bind="subjects.object" rows="2" placeholder="a granola bar"></textarea>
-          </label>
-          <label class="field">
-            <span>Scene / Setting <em>{{scene}}</em></span>
-            <input type="text" data-bind="subjects.scene" placeholder="a small wooden desk" />
-          </label>
-          <label class="field">
-            <span>Background <em>{{background}}</em></span>
-            <input type="text" data-bind="subjects.background" placeholder="Out-of-focus bookshelves" />
-          </label>
-          <label class="field span2">
-            <span>Surface / Prop <em>{{surface}}</em></span>
-            <input type="text" data-bind="subjects.surface" placeholder="a small white plate" />
-          </label>
-        </div>
-      </details>
-
-      <!-- STYLE (cinematic only) -->
-      <details class="card" id="card-style" data-kind-only="shots" open>
-        <summary class="card__head"><span class="card__num">03</span> Look &amp; Style</summary>
-        <div class="card__body grid">
-          <label class="field span2">
-            <span>Color grade <em>{{grade}}</em></span>
-            <input type="text" data-bind="style.grade" placeholder="Warm, desaturated color grade — aged paper tones" />
-          </label>
-          <label class="field">
-            <span>Frame rate <em>{{fps}}</em></span>
-            <input type="text" data-bind="style.fps" placeholder="24fps" />
-          </label>
-          <label class="field">
-            <span>Default lens</span>
-            <input type="text" data-bind="style.lens" placeholder="50mm" />
-          </label>
-        </div>
-      </details>
-
-      <!-- CUSTOM FIELDS (editable placeholder tokens) -->
-      <details class="card" id="card-fields" open>
-        <summary class="card__head"><span class="card__num">04</span> Fields <small>editable placeholder tokens</small></summary>
-        <div class="card__body">
-          <div id="fields"></div>
-          <button class="btn btn--ghost btn--wide" id="btn-add-field">＋ Add field</button>
-        </div>
-      </details>
-
-      <!-- SHOTS / SECTIONS -->
-      <details class="card" open>
-        <summary class="card__head"><span class="card__num">05</span> <span id="blocks-label">Shots</span> <small id="shot-count"></small></summary>
-        <div class="card__body">
-          <div id="shots"></div>
-          <button class="btn btn--ghost btn--wide" id="btn-add-shot">＋ Add shot</button>
-        </div>
-      </details>
-    </section>
-
-    <!-- ================= PREVIEW ================= -->
-    <section class="panel preview">
-      <div class="preview__head">
-        <h2>Generated Prompt</h2>
-        <div class="preview__stats" id="stats"></div>
-      </div>
-      <pre class="preview__out" id="output" tabindex="0"></pre>
-      <div class="preview__foot">
-        <button class="btn btn--primary" id="btn-copy2">⧉ Copy</button>
-        <button class="btn" id="btn-download2">↓ Download .txt</button>
-        <span class="hint" id="copy-hint"></span>
-      </div>
-      <details class="legend">
-        <summary>Token reference</summary>
-        <ul id="legend-list"></ul>
-      </details>
-    </section>
-  </main>
-
-  <!-- shot card template -->
-  <template id="shot-template">
-    <div class="shot" data-shot>
-      <div class="shot__bar">
-        <span class="shot__num"></span>
-        <input class="shot__title" data-shot-field="title" placeholder="SHOT TITLE" />
-        <input class="shot__subtitle" data-shot-field="subtitle" placeholder="SUBTITLE (optional)" />
-        <label class="shot__sec" title="Shot length in seconds — feeds the runtime estimate">
-          <input type="number" min="0" step="0.5" inputmode="decimal" data-shot-field="seconds" placeholder="0" />
-          <span>sec</span>
-        </label>
-        <div class="shot__actions">
-          <button class="iconbtn" data-shot-act="up" title="Move up">↑</button>
-          <button class="iconbtn" data-shot-act="down" title="Move down">↓</button>
-          <button class="iconbtn" data-shot-act="dup" title="Duplicate">⧉</button>
-          <button class="iconbtn iconbtn--danger" data-shot-act="del" title="Delete">✕</button>
-        </div>
-      </div>
-      <div class="shot__grid">
-        <label class="field span2">
-          <span>Camera &amp; lens</span>
-          <input data-shot-field="camera" placeholder="Cinematic medium shot, 50mm lens, eye level" />
-        </label>
-        <label class="field span2">
-          <span>Lighting <small>(optional)</small></span>
-          <input data-shot-field="lighting" placeholder="Warm tungsten key light from left" />
-        </label>
-        <label class="field span2">
-          <span>Action / description <small>(supports tokens)</small></span>
-          <textarea data-shot-field="action" rows="3" placeholder="What happens in the shot…"></textarea>
-        </label>
-        <label class="field">
-          <span>Dialogue lead-in</span>
-          <input data-shot-field="dialogueLead" placeholder="He delivers:" />
-        </label>
-        <label class="field">
-          <span>Grade &amp; tech note</span>
-          <input data-shot-field="gradeTech" placeholder="Warm desaturated grade. 24fps, film grain." />
-        </label>
-        <label class="field span2">
-          <span>Dialogue / spoken line <small>(optional — wrapped in quotes)</small></span>
-          <textarea data-shot-field="dialogue" rows="2" placeholder="'Four stars.'"></textarea>
-        </label>
-      </div>
-    </div>
-  </template>
-
-  <!-- section card template (sections-kind templates) -->
-  <template id="section-template">
-    <div class="shot" data-shot>
-      <div class="shot__bar">
-        <span class="shot__num"></span>
-        <input class="shot__title" data-shot-field="title" placeholder="SECTION HEADING" />
-        <div class="shot__actions">
-          <button class="iconbtn" data-shot-act="up" title="Move up">↑</button>
-          <button class="iconbtn" data-shot-act="down" title="Move down">↓</button>
-          <button class="iconbtn" data-shot-act="dup" title="Duplicate">⧉</button>
-          <button class="iconbtn iconbtn--danger" data-shot-act="del" title="Delete">✕</button>
-        </div>
-      </div>
-      <div class="shot__grid">
-        <label class="field span2">
-          <span>Content <small>(supports tokens)</small></span>
-          <textarea data-shot-field="action" rows="4" placeholder="Section content…"></textarea>
-        </label>
-      </div>
-    </div>
-  </template>
-
-  <!-- custom field row template -->
-  <template id="field-template">
-    <div class="frow" data-field>
-      <label class="field">
-        <span>Label</span>
-        <input data-field-prop="label" placeholder="Opening date" />
-      </label>
-      <label class="field">
-        <span>Token</span>
-        <input class="frow__key" data-field-prop="key" placeholder="openingDate" />
-      </label>
-      <label class="field frow__val">
-        <span>Value</span>
-        <input data-field-prop="value" placeholder="25th July 2026" />
-      </label>
-      <button class="iconbtn iconbtn--danger frow__del" data-field-act="del" title="Delete field">✕</button>
-    </div>
-  </template>
-
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showTips&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Panels&quot;},&quot;historyLimit&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:3,&quot;max&quot;:20,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Panels&quot;}}">
+const OPTS = {
+  style: ['None','Photorealistic','Cinematic film still','Studio product shot','Anime','3D render (Octane)','Oil painting','Watercolor','Cyberpunk','Minimalist flat illustration','Documentary photography'],
+  light: ['None','Golden hour','Soft studio softbox','Dramatic rim light','Neon glow','Overcast diffuse','Hard midday sun','Candlelight','Volumetric god rays'],
+  cam: ['None','85mm portrait lens','35mm street lens','Macro close-up','Wide-angle low angle','Aerial top-down','Telephoto compression','Fisheye','Eye-level medium shot'],
+  motion: ['None','Slow dolly-in','Orbit around subject','Handheld follow','Crane rise reveal','Static locked shot','Whip pan','Slow-motion 120fps','FPV fly-through'],
+  mood: ['None','Serene','Epic and grand','Moody noir','Playful','Melancholic','Tense','Dreamlike','Cozy'],
+  palette: ['None','Teal and orange','Monochrome black & white','Pastel tones','Earthy neutrals','Vivid saturated','Muted desaturated','Warm amber tones','Cool blue tones'],
+  quality: ['None','Ultra-detailed, sharp focus','8K, high dynamic range','Award-winning photography','Masterpiece, best quality','Clean render, physically based'],
+  ar: ['16:9','1:1','9:16','4:3','3:2','21:9','2.39:1']
+};
+const KM_OPT = {
+  'None':'គ្មាន','Photorealistic':'សមជាក់ស្ដែង','Cinematic film still':'ឈុតខ្សែភាពយន្ត','Studio product shot':'ថតផលិតផលក្នុងស្ទូឌីយោ','Anime':'អានីមេ','3D render (Octane)':'បង្ហាញ 3D (Octane)','Oil painting':'គំនូរប្រេង','Watercolor':'គំនូរពណ៌ទឹក','Cyberpunk':'ស៊ីប៊ឺផាំង','Minimalist flat illustration':'រូបគំនូររាបស្មើសាមញ្ញ','Documentary photography':'រូបថតឯកសារ',
+  'Golden hour':'ពន្លឺម៉ោងមាស','Soft studio softbox':'ពន្លឺស្ទូឌីយោទន់','Dramatic rim light':'ពន្លឺគែមខ្លាំង','Neon glow':'ពន្លឺនីអុង','Overcast diffuse':'មេឃស្រទុំ ពន្លឺរាយប៉ាយ','Hard midday sun':'ពន្លឺថ្ងៃត្រង់ខ្លាំង','Candlelight':'ពន្លឺទៀន','Volumetric god rays':'កាំរស្មីពន្លឺធ្លាយ',
+  '85mm portrait lens':'កែវថត 85mm (បញ្ឈរមុខ)','35mm street lens':'កែវថត 35mm (តាមផ្លូវ)','Macro close-up':'ម៉ាក្រូថតជិត','Wide-angle low angle':'មុំទូលាយ មុំទាប','Aerial top-down':'ថតពីលើអាកាសចុះក្រោម','Telephoto compression':'កែវថតតេឡេហ្វូតូ','Fisheye':'កែវភ្នែកត្រី','Eye-level medium shot':'កម្រិតភ្នែក ឆាកកណ្ដាល',
+  'Slow dolly-in':'ដូលីចូលយឺតៗ','Orbit around subject':'វិលជុំវិញប្រធានបទ','Handheld follow':'កាន់ដៃតាមដាន','Crane rise reveal':'ក្រេនឡើងបង្ហាញ','Static locked shot':'ថតនឹងមួយកន្លែង','Whip pan':'បង្វិលរហ័ស (whip pan)','Slow-motion 120fps':'ចលនាយឺត 120fps','FPV fly-through':'ហោះកាត់បែប FPV',
+  'Serene':'ស្ងប់ស្ងាត់','Epic and grand':'អស្ចារ្យ ធំធេង','Moody noir':'ងងឹតបែប Noir','Playful':'រីករាយ កំប្លែង','Melancholic':'ក្រៀមក្រំ','Tense':'តានតឹង','Dreamlike':'ដូចក្នុងសុបិន','Cozy':'កក់ក្ដៅ',
+  'Teal and orange':'ខៀវបៃតង-ទឹកក្រូច','Monochrome black & white':'ស-ខ្មៅ','Pastel tones':'ពណ៌ផាស្តែល','Earthy neutrals':'ពណ៌ដីធម្មជាតិ','Vivid saturated':'ពណ៌ភ្លឺឆ្អែតខ្លាំង','Muted desaturated':'ពណ៌ស្រអាប់','Warm amber tones':'ពណ៌លឿងកក់ក្ដៅ','Cool blue tones':'ពណ៌ខៀវត្រជាក់',
+  'Ultra-detailed, sharp focus':'លម្អិតខ្ពស់ ផ្ដោតច្បាស់','8K, high dynamic range':'8K, HDR','Award-winning photography':'រូបថតឈ្នះពានរង្វាន់','Masterpiece, best quality':'ស្នាដៃឯក គុណភាពល្អបំផុត','Clean render, physically based':'បង្ហាញស្អាត បែប PBR'
+};
+const T = {
+  en: {
+    title:'AI Generator Template', image:'Image', video:'Video',
+    core:'CORE SUBJECT', object:'Object', scene:'Scene', background:'Background',
+    phObj:'e.g. a vintage red motorcycle', phScene:'e.g. parked on a rain-soaked Tokyo street', phBg:'e.g. neon signs blurred in the distance', phNeg:'e.g. blurry, text, watermark, extra limbs',
+    enhancers:'ENHANCERS', style:'Art style', lighting:'Lighting', camera:'Camera / lens', motion:'Camera motion', mood:'Mood', palette:'Color palette', quality:'Quality boost', ar:'Aspect ratio',
+    negative:'Negative prompt', negativeHint:'(what to avoid)',
+    targetModel:'TARGET MODEL', copy:'Copy prompt', copied:'✓ Copied', reset:'Reset', chars:'chars',
+    tips:'EFFECTIVENESS TECHNIQUES', history:'HISTORY', clear:'clear',
+    historyEmpty:'Copied prompts land here. Click one to copy it again.',
+    emptyPrompt:'Fill in Object, Scene and Background to build your prompt…'
+  },
+  km: {
+    title:'គំរូបង្កើត Prompt AI', image:'រូបភាព', video:'វីដេអូ',
+    core:'ប្រធានបទស្នូល', object:'វត្ថុ', scene:'ឈុតឆាក', background:'ផ្ទៃខាងក្រោយ',
+    phObj:'ឧ. ម៉ូតូបុរាណពណ៌ក្រហម', phScene:'ឧ. ចតនៅផ្លូវតូក្យូពេលភ្លៀង', phBg:'ឧ. ផ្លាកនីអុងព្រិលៗពីចម្ងាយ', phNeg:'ឧ. ព្រិល, អក្សរ, watermark',
+    enhancers:'ឧបករណ៍បន្ថែម', style:'រចនាបថសិល្បៈ', lighting:'ពន្លឺ', camera:'កាមេរ៉ា / កែវថត', motion:'ចលនាកាមេរ៉ា', mood:'អារម្មណ៍', palette:'ក្ដារពណ៌', quality:'បង្កើនគុណភាព', ar:'សមាមាត្រ',
+    negative:'Prompt អវិជ្ជមាន', negativeHint:'(អ្វីដែលត្រូវជៀសវាង)',
+    targetModel:'ម៉ូដែលគោលដៅ', copy:'ចម្លង Prompt', copied:'✓ បានចម្លង', reset:'កំណត់ឡើងវិញ', chars:'តួអក្សរ',
+    tips:'បច្ចេកទេសប្រសិទ្ធភាព', history:'ប្រវត្តិ', clear:'សម្អាត',
+    historyEmpty:'Prompt ដែលបានចម្លងនឹងបង្ហាញនៅទីនេះ។ ចុចមួយដើម្បីចម្លងម្ដងទៀត។',
+    emptyPrompt:'បំពេញ វត្ថុ ឈុតឆាក និងផ្ទៃខាងក្រោយ ដើម្បីបង្កើត prompt…'
+  }
+};
+const TIPS = {
+  en: [
+    {b:'Subject first.', d:'Lead with the object, then scene, then background — models weight early tokens more.'},
+    {b:'Be concrete.', d:'"Weathered brass compass" beats "nice old compass". Specific nouns + adjectives win.'},
+    {b:'One light source.', d:'Name the lighting explicitly; conflicting light cues cause muddy renders.'},
+    {b:'Camera language.', d:'Lens + angle (85mm, low-angle) reads as photographic intent across all models.'},
+    {b:'Negatives for artifacts only.', d:'Use the negative field for defects (blur, text, watermark), not style choices.'},
+    {b:'Video = motion verbs.', d:'For video models, describe what moves and how the camera travels, in one continuous action.'}
+  ],
+  km: [
+    {b:'ប្រធានបទមុនគេ។', d:'ចាប់ផ្ដើមដោយវត្ថុ បន្ទាប់មកឈុតឆាក រួចផ្ទៃខាងក្រោយ — ម៉ូដែលផ្ដល់ទម្ងន់ខ្ពស់ដល់ពាក្យដើម។'},
+    {b:'ជាក់លាក់។', d:'«ត្រីវិស័យស្ពាន់ចាស់» ល្អជាង «ត្រីវិស័យចាស់ស្អាត»។ នាម + គុណនាមជាក់លាក់ឈ្នះ។'},
+    {b:'ប្រភពពន្លឺមួយ។', d:'បញ្ជាក់ពន្លឺឱ្យច្បាស់ — ពន្លឺផ្ទុយគ្នាធ្វើឱ្យរូបភាពមិនច្បាស់។'},
+    {b:'ភាសាកាមេរ៉ា។', d:'កែវថត + មុំ (85mm, មុំទាប) បង្ហាញចេតនាថតរូបគ្រប់ម៉ូដែល។'},
+    {b:'អវិជ្ជមានសម្រាប់កំហុសប៉ុណ្ណោះ។', d:'ប្រើសម្រាប់កំហុស (ព្រិល, អក្សរ, watermark) មិនមែនជម្រើសរចនាបថទេ។'},
+    {b:'វីដេអូ = កិរិយាចលនា។', d:'ពណ៌នាអ្វីដែលផ្លាស់ទី និងរបៀបកាមេរ៉ាធ្វើដំណើរ ក្នុងសកម្មភាពបន្តតែមួយ។'}
+  ]
+};
+const MODELS = {
+  image: [
+    {name:'Midjourney', fmt:'mj', note:{en:'Comma-separated tags with --ar and --no parameters. Loves style keywords; keep it dense, not conversational.', km:'ស្លាកញែកដោយក្បៀស ជាមួយប៉ារ៉ាម៉ែត្រ --ar និង --no។ ចូលចិត្តពាក្យគន្លឹះរចនាបថ — សរសេរឱ្យក្រាស់ មិនមែនបែបសន្ទនាទេ។'}},
+    {name:'DALL·E 3 / GPT-Image', fmt:'natural', note:{en:'Natural-language sentences work best — describe as if briefing a photographer. Negatives go in as "Avoid: …".', km:'ប្រយោគភាសាធម្មតាដំណើរការល្អបំផុត — ពណ៌នាដូចណែនាំអ្នកថតរូប។ អវិជ្ជមានដាក់ជា "Avoid: …"។'}},
+    {name:'Adobe Firefly', fmt:'tags', note:{en:'Short descriptive phrases separated by commas. Set aspect ratio in the UI; avoid-list appended as guidance.', km:'ឃ្លាពណ៌នាខ្លីៗញែកដោយក្បៀស។ កំណត់សមាមាត្រក្នុង UI; បញ្ជីជៀសវាងភ្ជាប់ជាការណែនាំ។'}},
+    {name:'Nano Banana (Gemini)', fmt:'natural', note:{en:'Conversational, richly descriptive prose. Great at following spatial instructions like "in the background".', km:'សំណេរបែបសន្ទនា ពណ៌នាសម្បូរបែប។ ពូកែតាមការណែនាំទីតាំង ដូចជា "នៅផ្ទៃខាងក្រោយ"។'}}
+  ],
+  video: [
+    {name:'Seedance 2.0', fmt:'video', note:{en:'One continuous shot description: subject action + camera motion + lighting. Keep it to a single beat per prompt.', km:'ការពណ៌នាឆាកបន្តមួយ៖ សកម្មភាពប្រធានបទ + ចលនាកាមេរ៉ា + ពន្លឺ។ រក្សាមួយចង្វាក់ក្នុងមួយ prompt។'}},
+    {name:'Runway Gen-4', fmt:'video', note:{en:'Lead with camera movement, then subject action. Simple, filmic language; avoid abstract adjectives.', km:'ចាប់ផ្ដើមដោយចលនាកាមេរ៉ា រួចសកម្មភាពប្រធានបទ។ ភាសាខ្សែភាពយន្តសាមញ្ញ; ជៀសវាងគុណនាមអរូបី។'}},
+    {name:'Google Veo 3', fmt:'video', note:{en:'Cinematic prose with explicit camera + lens language. Can include ambient sound cues in the description.', km:'សំណេរបែបខ្សែភាពយន្ត ជាមួយភាសាកាមេរ៉ា + កែវថតច្បាស់លាស់។ អាចបញ្ចូលសំឡេងបរិយាកាសក្នុងការពណ៌នា។'}},
+    {name:'Kling 2.1', fmt:'video', note:{en:'Subject + action + environment, then camera motion. Responds well to physics words (swaying, splashing).', km:'ប្រធានបទ + សកម្មភាព + បរិយាកាស រួចចលនាកាមេរ៉ា។ ឆ្លើយតបល្អនឹងពាក្យរូបវិទ្យា (យោលយាក, សាចទឹក)។'}},
+    {name:'Higgsfield', fmt:'video', note:{en:'Preset-driven camera moves — name the move exactly (dolly-in, orbit, crane). Pair with a strong single subject.', km:'ចលនាកាមេរ៉ាតាម preset — ដាក់ឈ្មោះចលនាឱ្យត្រឹមត្រូវ (dolly-in, orbit, crane)។ ផ្គូផ្គងជាមួយប្រធានបទតែមួយខ្លាំង។'}}
+  ]
+};
+class Component extends DCLogic {
+  state = { lang:'en', mode:'image', model:'Midjourney', copied:false, history:[],
+    f:{obj:'',scene:'',bg:'',style:'None',lighting:'None',camera:'None',motion:'None',mood:'None',palette:'None',quality:'None',negative:'',ar:'16:9'} };
+  componentDidMount(){
+    try{ const h = JSON.parse(localStorage.getItem('aigen_history')||'[]'); if(Array.isArray(h)) this.setState({history:h}); }catch(e){}
+    try{ const l = localStorage.getItem('aigen_lang'); if(l==='km'||l==='en') this.setState({lang:l}); }catch(e){}
+  }
+  setF(k){ return e => this.setState(s => ({f:{...s.f,[k]:e.target.value}, copied:false})); }
+  pieces(){
+    const f=this.state.f, p=[];
+    if(f.obj) p.push(f.obj);
+    if(f.scene) p.push(f.scene);
+    if(f.bg) p.push('background: '+f.bg);
+    ['style','lighting','camera','mood','palette','quality'].forEach(k=>{ if(f[k]&&f[k]!=='None') p.push(f[k].toLowerCase()); });
+    return p;
+  }
+  build(){
+    const f=this.state.f;
+    const model=(MODELS[this.state.mode].find(m=>m.name===this.state.model))||MODELS[this.state.mode][0];
+    const p=this.pieces();
+    if(!p.length) return {model, text:T[this.state.lang].emptyPrompt};
+    let text='';
+    if(model.fmt==='mj'){
+      text=p.join(', ')+' --ar '+f.ar+(f.negative?' --no '+f.negative:'');
+    } else if(model.fmt==='tags'){
+      text=p.join(', ')+(f.negative?'. Avoid: '+f.negative:'')+' (aspect ratio '+f.ar+')';
+    } else if(model.fmt==='video'){
+      const seg=[];
+      if(f.obj) seg.push(f.obj+(f.scene?' '+f.scene:''));
+      else if(f.scene) seg.push(f.scene);
+      if(f.bg) seg.push('In the background, '+f.bg);
+      if(f.motion&&f.motion!=='None') seg.push('Camera: '+f.motion.toLowerCase()+(f.camera&&f.camera!=='None'?', '+f.camera.toLowerCase():''));
+      else if(f.camera&&f.camera!=='None') seg.push('Camera: '+f.camera.toLowerCase());
+      ['lighting','mood','palette','style','quality'].forEach(k=>{ if(f[k]&&f[k]!=='None') seg.push(f[k]+(k==='lighting'?' lighting':'')); });
+      text=seg.join('. ')+'. Aspect ratio '+f.ar+'.'+(f.negative?' Avoid: '+f.negative+'.':'');
+    } else {
+      const seg=[];
+      let lead='';
+      if(f.obj) lead=f.obj.charAt(0).toUpperCase()+f.obj.slice(1);
+      if(f.scene) lead+=(lead?', ':'')+f.scene;
+      if(lead) seg.push(lead);
+      if(f.bg) seg.push('In the background: '+f.bg);
+      const styleBits=['style','lighting','camera','mood','palette','quality'].filter(k=>f[k]&&f[k]!=='None').map(k=>f[k].toLowerCase());
+      if(styleBits.length) seg.push('Rendered as '+styleBits.join(', '));
+      text=seg.join('. ')+'. Aspect ratio '+f.ar+'.'+(f.negative?' Avoid: '+f.negative+'.':'');
+    }
+    return {model, text};
+  }
+  copy(){
+    const {text}=this.build();
+    if(!this.pieces().length) return;
+    try{ navigator.clipboard.writeText(text); }catch(e){}
+    const entry={model:this.state.model, prompt:text, t:Date.now()};
+    const limit=this.props.historyLimit ?? 8;
+    const history=[entry,...this.state.history.filter(h=>h.prompt!==text)].slice(0,limit);
+    try{ localStorage.setItem('aigen_history', JSON.stringify(history)); }catch(e){}
+    this.setState({copied:true, history});
+    clearTimeout(this._ct); this._ct=setTimeout(()=>this.setState({copied:false}),1600);
+  }
+  opts(list){
+    const km=this.state.lang==='km';
+    return list.map(o=>({v:o, l:km?(KM_OPT[o]||o):o}));
+  }
+  renderVals(){
+    const s=this.state, f=s.f, lang=s.lang, t=T[lang];
+    const {model, text}=this.build();
+    const tab=(on)=>on?{bg:'#c8f04a',fg:'#0d0f12'}:{bg:'transparent',fg:'#8b93a1'};
+    const setMode=(m)=>()=>this.setState({mode:m, model:MODELS[m][0].name, copied:false});
+    const models=MODELS[s.mode].map(m=>{
+      const on=m.name===s.model;
+      return {name:m.name, bg:on?'#c8f04a':'transparent', fg:on?'#0d0f12':'#c6ccd6', bd:on?'#c8f04a':'#3a4150',
+        select:()=>this.setState({model:m.name, copied:false})};
+    });
+    const historyItems=s.history.map(h=>({model:h.model, short:h.prompt.length>110?h.prompt.slice(0,110)+'…':h.prompt,
+      use:()=>{ try{navigator.clipboard.writeText(h.prompt);}catch(e){} }}));
+    return {
+      t, langLabel:lang==='en'?'ខ្មែរ':'EN', isKhmer:lang==='km',
+      toggleLang:()=>{ const l=lang==='en'?'km':'en'; try{localStorage.setItem('aigen_lang',l);}catch(e){} this.setState({lang:l}); },
+      tipItems:TIPS[lang],
+      obj:f.obj, scene:f.scene, bg:f.bg, style:f.style, lighting:f.lighting, camera:f.camera, motion:f.motion,
+      mood:f.mood, palette:f.palette, quality:f.quality, negative:f.negative, ar:f.ar,
+      onObj:this.setF('obj'), onScene:this.setF('scene'), onBg:this.setF('bg'), onStyle:this.setF('style'),
+      onLighting:this.setF('lighting'), onCamera:this.setF('camera'), onMotion:this.setF('motion'),
+      onMood:this.setF('mood'), onPalette:this.setF('palette'), onQuality:this.setF('quality'),
+      onNegative:this.setF('negative'), onAr:this.setF('ar'),
+      styleOpts:this.opts(OPTS.style), lightOpts:this.opts(OPTS.light), camOpts:this.opts(OPTS.cam),
+      motionOpts:this.opts(OPTS.motion), moodOpts:this.opts(OPTS.mood), paletteOpts:this.opts(OPTS.palette),
+      qualityOpts:this.opts(OPTS.quality), arOpts:OPTS.ar.map(o=>({v:o,l:o})),
+      isVideo:s.mode==='video',
+      setImageMode:setMode('image'), setVideoMode:setMode('video'),
+      imgTabBg:tab(s.mode==='image').bg, imgTabFg:tab(s.mode==='image').fg,
+      vidTabBg:tab(s.mode==='video').bg, vidTabFg:tab(s.mode==='video').fg,
+      models, modelNote:model.note[lang], prompt:text, charCount:text.length,
+      copy:()=>this.copy(), copyLabel:s.copied?t.copied:t.copy,
+      clearAll:()=>this.setState({f:{obj:'',scene:'',bg:'',style:'None',lighting:'None',camera:'None',motion:'None',mood:'None',palette:'None',quality:'None',negative:'',ar:'16:9'}, copied:false}),
+      historyItems, hasHistory:s.history.length>0, noHistory:s.history.length===0,
+      clearHistory:()=>{ this.setState({history:[]}); try{localStorage.setItem('aigen_history','[]');}catch(e){} },
+      showTips:this.props.showTips ?? true
+    };
+  }
+}
+</script>
 </body>
 </html>

@@ -1,107 +1,118 @@
-# 🎬 AI Prompt Template Generator
+# ✦ AI Generator Template
 
-A form-driven generator for **multi-shot cinematic AI video prompts**. You edit the
-**Character**, **Object**, **Scene**, **Background** (and more) once as global *tokens* —
-they flow into every shot automatically. Add, remove, reorder and reword shots, then copy
-the finished prompt.
+A form-driven prompt studio for AI **image** and **video** models, live at
+**[ai.saorin.me](https://ai.saorin.me/)**.
 
-Ships pre-loaded with the *film-critic / granola-bar* marketing example so you can see the
-structure immediately, then swap the subjects to retarget it to any product.
+Describe the subject, scene and background, then dial in **style, lighting, camera,
+motion, mood, palette and quality**. The prompt assembles live in the right-hand pane,
+tuned to whichever model you pick. Copy it and go. The whole UI switches between
+**English** and **ភាសាខ្មែរ** — labels, option names and tips all translate.
 
-## Run
+- **Image / Video** tabs with separate model rosters and per-model phrasing notes
+- Negative prompt + aspect ratio, appended in each model's native syntax
+- **Tips** panel with prompt-writing guidance per language
+- **History** of recently copied prompts, kept in `localStorage`
+- No accounts, no backend state — everything lives in the browser
+
+## Run locally
 
 ```bash
 npm install
 npm start
-# → http://localhost:3600   (set PORT to change)
+# → http://localhost:3600      (set PORT to change)
 ```
 
-Then open the URL in your browser.
+## How it's built
 
-## Presets & template kinds
-
-Click **✦ Presets** for built-in starter prompts. There are two template *kinds*:
-
-- **Shots** — cinematic multi-shot video prompts (e.g. *Film Critic — Granola Bar*). Each block is a camera shot with lens/lighting/dialogue/duration.
-- **Sections** — structured design/image prompts (e.g. *Grocery Store Grand Opening* poster). Each block is a titled section of content. No `SHOT NN` numbering, camera, or runtime — just heading + body.
-
-The form adapts to the kind: cinematic-only panels (Subjects, Look & Style, brand/duration/verdict) are hidden for **Sections** templates.
-
-## Custom Fields (editable placeholders)
-
-The **Fields** panel lets any template expose its own editable placeholder tokens. Each field has a **Label**, a **Token** key, and a **Value** — the value flows wherever you write `{{key}}`. The grocery poster ships with `{{headline}}`, `{{storeName}}`, `{{openingDate}}`, `{{openingTime}}`, `{{slogan}}`, … so you can re-skin the poster for any store by editing the fields once.
-
-## How it works
-
-### Global tokens (the editable fields)
-Type a value once in the **Subjects / Concept / Style** panels and reference it anywhere
-with `{{token}}`. Substitution happens live as you type.
-
-| Token | Field |
-|-------|-------|
-| `{{character}}` | Character |
-| `{{object}}` | Object / Product (use a **bare noun**, e.g. `granola bar`; articles live in the sentence) |
-| `{{scene}}` | Scene / Setting |
-| `{{background}}` | Background |
-| `{{surface}}` | Surface / Prop |
-| `{{ref}}` | Image reference → renders as `@[Image 1]` |
-| `{{grade}}` | Color grade |
-| `{{fps}}` | Frame rate |
-| `{{brand}}` | Brand name |
-| `{{verdict}}` | Verdict / payoff |
-| `{{duration}}` | Total duration |
-
-Click any chip in the **Insert token** bar to drop a token into the field you last edited.
-
-### Shots
-Each shot is fully editable — Title, Subtitle, **length in seconds**, Camera & lens, Lighting,
-Action, Dialogue (auto-wrapped in quotes with a lead-in like *"He delivers:"*), and a Grade/tech
-note. Use the per-shot buttons to **move ↑ / ↓**, **duplicate ⧉**, or **delete ✕**, and
-**＋ Add shot** for more. Shots are auto-numbered `01, 02, …`.
-
-The per-shot **sec** field feeds an **estimated runtime** shown in the Shots header and the
-preview stats (`~25s`, or `~1m 30s` once past a minute). It's planning metadata only — it is
-**not** injected into the generated prompt text.
-
-### Output
-The right pane shows the assembled prompt live:
+The UI is a **dc artifact**: a declarative HTML template plus a logic class, rendered by
+the `dc` runtime in [public/support.js](public/support.js). There is no build step — the
+browser parses `<x-dc>…</x-dc>` from [public/index.html](public/index.html), and the
+`<script type="text/x-dc">` block at the bottom of that same file supplies state and the
+values the template binds to.
 
 ```
-<Category>:
-
-<Concept summary>
-
-SHOT 01 — <TITLE> — <SUBTITLE>
-<camera>. <lighting>. <action> <He delivers: '…'> <grade/tech>
-
----
-
-SHOT 02 — …
+server.js                          Express static server + /api/health
+public/index.html                  <head> + the dc template + the logic class
+public/support.js                  dc runtime (generated — do not hand-edit)
+public/vendor/react*.min.js        React 18.3.1 UMD, self-hosted
+public/og-image.webp               social preview image
+public/robots.txt, sitemap.xml
 ```
 
-**⧉ Copy Prompt** (or ⌘/Ctrl-S) copies it; **↓ .txt** downloads it.
+### Editing the app
 
-## Saving & sharing your work
-- Your current form **autosaves** to the browser (`localStorage`) and reloads next visit.
-- **⤓ Save** stores a named template in the **▤ Library** (also browser-local).
-- **⤴ Export** downloads the whole template as a portable `.json` file; **⤵ Import** loads one
-  back (validated for `meta` / `subjects` / `shots`). This is the way to share a template
-  between browsers or with other people.
-- A small server-side template store is also exposed for programmatic use:
-  - `GET /api/templates`
-  - `POST /api/templates` `{ "name": "...", "data": { ... } }` (upsert by name)
-  - `DELETE /api/templates/:id`
-  - persisted to `data/templates.json`.
+Everything you'd want to change lives in `public/index.html`:
 
-## Files
+| What | Where |
+|------|-------|
+| Dropdown choices (style, lighting, camera, motion, mood, palette, quality, AR) | `const OPTS` |
+| Khmer translations of those choices | `const KM_OPT` |
+| All UI strings, both languages | `const T` |
+| Model list, per-model prompt assembly and notes | `const MODELS` |
+| Tips panel copy | `const TIPS` |
+| Layout, colours, spacing | the `<x-dc>` template markup |
+
+`build()` is where a model's final prompt string is assembled — that's the function to
+touch when a model changes its preferred syntax.
+
+**Do not hand-edit `public/support.js`.** It is generated from the dc runtime source; the
+header comment in the file says as much. Replace it wholesale when you re-export.
+
+### Why React is vendored
+
+`support.js` normally pulls React 18.3.1 and ReactDOM from unpkg at runtime. Its
+`loadReactUmd()` returns early when `window.React` and `window.ReactDOM` already exist, so
+`index.html` loads local copies from `public/vendor/` first and the page never reaches out
+to unpkg. Both files were byte-verified against the SRI digests baked into `support.js`.
+
+If you swap in a newer `support.js`, re-check the React version it expects and refresh
+`public/vendor/` to match:
+
+```bash
+curl -sSL -o public/vendor/react.production.min.js \
+  https://unpkg.com/react@18.3.1/umd/react.production.min.js
+curl -sSL -o public/vendor/react-dom.production.min.js \
+  https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js
+# then confirm each digest matches REACT_SRI / REACT_DOM_SRI in support.js:
+openssl dgst -sha384 -binary public/vendor/react.production.min.js | openssl base64 -A
 ```
-server.js            Express static server + templates JSON API
-public/index.html    layout + shot card template
-public/styles.css    dark cinematic theme
-public/data.js       blank/default state + the granola-bar example
-public/app.js        state, token substitution, prompt generation, UI wiring
+
+Google Fonts (Space Grotesk, IBM Plex Mono, Noto Sans Khmer) are still loaded from the
+CDN — Noto Sans Khmer is what makes the Khmer UI render correctly.
+
+## Deployment
+
+Production is `ai.saorin.me` on the EC2 HestiaCP box, behind Cloudflare.
+
+```
+Cloudflare (proxied)
+  └─ nginx :443            static extensions → /home/alsadmin/web/ai.saorin.me/public_html
+       └─ @fallback / "/"  → Apache :8443
+            └─ ProxyPass   → http://localhost:4090
+                 └─ pm2 "ai-saorin"  →  /var/www/ai-saorin/server.js   (PORT=4090)
 ```
 
-## Customising the starter example
-Edit `exampleState()` in [public/data.js](public/data.js) to change the default subjects,
-style, concept and shots that load on first open / **★ Load Example**.
+The split matters: **anything with a file extension is served by nginx off disk**, not by
+Express. So a deploy has to update *two* locations — the app directory and the nginx
+document root — or you get a new `index.html` served against stale assets.
+
+```bash
+ssh ubuntu@news.saorin.me
+
+# 1. app dir (Express + "/" requests)
+cd /var/www/ai-saorin
+git fetch origin && git reset --hard origin/main
+npm ci --omit=dev
+
+# 2. nginx document root (every request with a file extension)
+sudo rsync -a --delete public/ /home/alsadmin/web/ai.saorin.me/public_html/
+sudo chown -R alsadmin:www-data /home/alsadmin/web/ai.saorin.me/public_html/
+
+# 3. restart
+pm2 restart ai-saorin && pm2 save
+```
+
+nginx sets `expires max` on static files, so give changed assets new filenames or purge
+the Cloudflare cache after deploying. `/` is never cached (`cf-cache-status: DYNAMIC`).
+
+Health check: `curl https://ai.saorin.me/api/health`

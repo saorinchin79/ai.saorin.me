@@ -1,69 +1,47 @@
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3600;
-const DATA_DIR = path.join(__dirname, 'data');
-const TEMPLATES_FILE = path.join(DATA_DIR, 'templates.json');
+const PUBLIC_DIR = path.join(__dirname, 'public');
 
-app.use(express.json({ limit: '2mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.disable('x-powered-by');
 
-/* ---------- tiny JSON template store (optional server-side library) ---------- */
-function ensureStore() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(TEMPLATES_FILE)) fs.writeFileSync(TEMPLATES_FILE, '[]');
-}
-function readTemplates() {
-  ensureStore();
-  try {
-    return JSON.parse(fs.readFileSync(TEMPLATES_FILE, 'utf8'));
-  } catch {
-    return [];
-  }
-}
-function writeTemplates(list) {
-  ensureStore();
-  fs.writeFileSync(TEMPLATES_FILE, JSON.stringify(list, null, 2));
-}
+/* In production nginx serves everything with a file extension straight off disk
+   (see README → Deployment), so Express mostly handles "/" and the health check.
+   The cache headers below still matter for local runs and for the nginx @fallback. */
+app.use(
+  express.static(PUBLIC_DIR, {
+    etag: true,
+    lastModified: true,
+    setHeaders(res, filePath) {
+      // index.html is the entry point and must never be cached — the dc runtime
+      // re-fetches it at boot to recover the un-normalised template source.
+      if (path.basename(filePath) === 'index.html') {
+        res.setHeader('Cache-Control', 'no-cache');
+      } else if (filePath.includes(`${path.sep}vendor${path.sep}`)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+      }
+    },
+  })
+);
 
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
-
-app.get('/api/templates', (_req, res) => {
-  res.json(readTemplates());
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, app: 'ai-generator-template', uptime: process.uptime() });
 });
 
-// upsert by name
-app.post('/api/templates', (req, res) => {
-  const { name, data } = req.body || {};
-  if (!name || typeof name !== 'string' || !data) {
-    return res.status(400).json({ error: 'name (string) and data (object) are required' });
-  }
-  const list = readTemplates();
-  const now = new Date().toISOString();
-  const existing = list.find((t) => t.name.toLowerCase() === name.toLowerCase());
-  if (existing) {
-    existing.data = data;
-    existing.updatedAt = now;
-    writeTemplates(list);
-    return res.json(existing);
-  }
-  const record = { id: 't_' + Date.now().toString(36), name, data, createdAt: now, updatedAt: now };
-  list.push(record);
-  writeTemplates(list);
-  res.status(201).json(record);
+// Single-page app: anything that isn't a real file falls back to the generator.
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
-app.delete('/api/templates/:id', (req, res) => {
-  const list = readTemplates();
-  const next = list.filter((t) => t.id !== req.params.id);
-  if (next.length === list.length) return res.status(404).json({ error: 'not found' });
-  writeTemplates(next);
-  res.json({ ok: true });
-});
+app.use((_req, res) => res.status(404).json({ error: 'not found' }));
 
 app.listen(PORT, () => {
-  console.log(`\n  🎬  AI Prompt Template Generator`);
-  console.log(`      running at  http://localhost:${PORT}\n`);
+  console.log(`\n  ✦  AI Generator Template`);
+  console.log(`     running at  http://localhost:${PORT}\n`);
 });

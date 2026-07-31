@@ -257,6 +257,26 @@ class Component extends DCLogic {
   componentDidMount(){
     try{ const h = JSON.parse(localStorage.getItem('aigen_history')||'[]'); if(Array.isArray(h)) this.setState({history:h}); }catch(e){}
     try{ const l = localStorage.getItem('aigen_lang'); if(l==='km'||l==='en') this.setState({lang:l}); }catch(e){}
+    // Signed-in visitors get history from the server so it follows them between
+    // browsers; account.js fires aigen:auth on sign-in and sign-out. The handler
+    // is registered once globally and always calls the newest instance, so a
+    // template hot-update can't leave duplicate listeners behind.
+    window.__aigenSync = () => this.syncHistory();
+    if(!window.__aigenAuthHooked){
+      window.__aigenAuthHooked = true;
+      window.addEventListener('aigen:auth', () => window.__aigenSync && window.__aigenSync());
+    }
+    this.syncHistory();
+  }
+  async syncHistory(){
+    const acct = window.AIGEN_ACCOUNT;
+    const limit = this.props.historyLimit ?? 8;
+    if(!acct || !acct.user){ return; }
+    const rows = await acct.history(limit);
+    if(!rows) return;
+    const history = rows.map(r=>({model:r.model, prompt:r.prompt, t:Date.parse(r.createdAt)||Date.now()})).slice(0,limit);
+    this.setState({history});
+    try{ localStorage.setItem('aigen_history', JSON.stringify(history)); }catch(e){}
   }
   setF(k){ return e => this.setState(s => ({f:{...s.f,[k]:e.target.value}, copied:false})); }
   pieces(){
@@ -307,6 +327,12 @@ class Component extends DCLogic {
     const limit=this.props.historyLimit ?? 8;
     const history=[entry,...this.state.history.filter(h=>h.prompt!==text)].slice(0,limit);
     try{ localStorage.setItem('aigen_history', JSON.stringify(history)); }catch(e){}
+    // Record it server-side too. Fire-and-forget inside account.js — a logging
+    // failure must never stop the copy from succeeding.
+    if(window.AIGEN_ACCOUNT){
+      window.AIGEN_ACCOUNT.recordPrompt({prompt:text, model:this.state.model,
+        mode:this.state.mode, lang:this.state.lang, fields:this.state.f});
+    }
     this.setState({copied:true, history});
     clearTimeout(this._ct); this._ct=setTimeout(()=>this.setState({copied:false}),1600);
   }
@@ -353,5 +379,6 @@ class Component extends DCLogic {
   }
 }
 </script>
+<script src="./account.js"></script>
 </body>
 </html>

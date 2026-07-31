@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Superadmin — AI Generator Template</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0d0f12">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230d0f12'/%3E%3Ctext x='50' y='72' font-size='62' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='%23c8f04a'%3E%E2%9C%A6%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<!-- Boot state: replaced by either the sign-in card or the console. -->
+<div id="boot" class="login-wrap">
+  <div class="login" style="text-align:center">
+    <span class="spinner"></span>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------- sign in -->
+<div id="login" class="login-wrap hidden">
+  <div class="login">
+    <div class="eyebrow">Prompt Studio</div>
+    <h1>Superadmin</h1>
+    <p class="sub">Sign in with the email on the superadmin list. We'll send a one-time code.</p>
+
+    <div id="login-note" class="note hidden"></div>
+
+    <form id="login-email-form">
+      <label class="field">
+        <span>Email address</span>
+        <input type="email" id="login-email" autocomplete="email" placeholder="you@example.com" required>
+      </label>
+      <button class="btn btn--primary" type="submit" id="login-send">Send code</button>
+    </form>
+
+    <form id="login-code-form" class="hidden">
+      <label class="field">
+        <span>6-digit code</span>
+        <input type="text" id="login-code" class="code-input" inputmode="numeric"
+               autocomplete="one-time-code" maxlength="6" placeholder="······" required>
+      </label>
+      <button class="btn btn--primary" type="submit" id="login-verify">Verify &amp; sign in</button>
+      <button class="btn" type="button" id="login-back" style="margin-top:10px">Use a different email</button>
+    </form>
+
+    <p class="sub" style="margin:20px 0 0;font-size:12px">
+      <a href="/">← Back to the generator</a>
+    </p>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------------- console -->
+<div id="console" class="shell hidden">
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Prompt Studio</div>
+      <h1>Superadmin</h1>
+    </div>
+    <div class="whoami">
+      <span id="whoami-label"></span>
+      <button class="btn btn--sm" id="logout">Sign out</button>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-view="overview" aria-selected="true">Overview</button>
+    <button class="tab" role="tab" data-view="prompts" aria-selected="false">User Prompt Modules</button>
+    <button class="tab" role="tab" data-view="users" aria-selected="false">Users</button>
+  </div>
+
+  <!-- Overview -->
+  <section id="view-overview" class="view">
+    <div class="stats" id="stat-cards"></div>
+    <div class="cols">
+      <div class="panel">
+        <h2>Top models</h2>
+        <div class="bars" id="chart-models"></div>
+      </div>
+      <div class="panel">
+        <h2>Prompts per day (14d)</h2>
+        <div class="bars" id="chart-daily"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Prompt Modules -->
+  <section id="view-prompts" class="view hidden">
+    <div class="filters">
+      <label class="field grow">
+        <span>Search prompt text, email or phone</span>
+        <input type="search" id="f-q" placeholder="e.g. motorcycle, @gmail.com">
+      </label>
+      <label class="field">
+        <span>Audience</span>
+        <select id="f-audience">
+          <option value="all">Everyone</option>
+          <option value="anonymous">Not signed in</option>
+          <option value="registered">Registered users</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Mode</span>
+        <select id="f-mode">
+          <option value="">Any</option>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Model</span>
+        <select id="f-model"><option value="">Any</option></select>
+      </label>
+      <button class="btn" id="f-reset">Reset</button>
+      <a class="btn" id="f-csv" href="/api/admin/prompts.csv">Export CSV</a>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:64px">ID</th>
+            <th style="width:150px">When</th>
+            <th style="width:180px">Author</th>
+            <th style="width:88px">Mode</th>
+            <th style="width:150px">Model</th>
+            <th>Prompt</th>
+            <th style="width:96px"></th>
+          </tr>
+        </thead>
+        <tbody id="prompt-rows"></tbody>
+      </table>
+      <div id="prompt-empty" class="empty hidden">No prompts match these filters yet.</div>
+    </div>
+    <div class="pager">
+      <span id="prompt-count"></span>
+      <button class="btn btn--sm" id="prompt-prev">← Prev</button>
+      <button class="btn btn--sm" id="prompt-next">Next →</button>
+    </div>
+  </section>
+
+  <!-- Users -->
+  <section id="view-users" class="view hidden">
+    <div class="filters">
+      <label class="field grow">
+        <span>Search email, phone or name</span>
+        <input type="search" id="u-q" placeholder="e.g. saorin">
+      </label>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:64px">ID</th>
+            <th>Identity</th>
+            <th style="width:110px">Role</th>
+            <th style="width:110px">Status</th>
+            <th style="width:100px">Prompts</th>
+            <th style="width:150px">Joined</th>
+            <th style="width:150px">Last login</th>
+            <th style="width:190px"></th>
+          </tr>
+        </thead>
+        <tbody id="user-rows"></tbody>
+      </table>
+      <div id="user-empty" class="empty hidden">No users yet.</div>
+    </div>
+    <div class="pager">
+      <span id="user-count"></span>
+      <button class="btn btn--sm" id="user-prev">← Prev</button>
+      <button class="btn btn--sm" id="user-next">Next →</button>
+    </div>
+  </section>
+</div>
+
+<script src="/admin/admin.js"></script>
+</body>
+</html>

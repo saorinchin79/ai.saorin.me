@@ -1,7 +1,7 @@
 {
   "name": "ai-generator-template",
-  "version": "2.0.0",
-  "description": "Form-driven AI prompt studio. Compose image and video prompts from style / lighting / camera / motion / mood controls, target a specific model, and copy the result. Bilingual EN / ខ្មែរ.",
+  "version": "2.1.0",
+  "description": "Form-driven AI prompt studio. Compose image and video prompts from style / lighting / camera / motion / mood controls, target a specific model, and copy the result. Bilingual EN / \u1781\u17d2\u1798\u17c2\u179a.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

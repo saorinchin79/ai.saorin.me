@@ -1,7 +1,9 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const fs = require('fs');
 const path = require('path');
 
+const pkg = require('./package.json');
 const config = require('./src/config');
 const otp = require('./src/otp');
 const { attachIdentity } = require('./src/auth');
@@ -34,17 +36,38 @@ app.use('/api/admin', require('./src/routes/admin'));
 
 /* --------------------------------------------------------------- statics */
 
+/* Our assets have unversioned filenames, and Cloudflare's zone-level Browser
+   Cache TTL overrides the origin's Cache-Control, so no-cache alone can leave
+   visitors on a stale account.js or admin bundle for hours. Both HTML shells
+   therefore carry ?v=<version> on their asset URLs: bumping the version in
+   package.json busts every one of them at once, independent of CDN settings. */
+const shells = new Map();
+function sendShell(res, ...segments) {
+  const file = path.join(PUBLIC_DIR, ...segments);
+  if (!shells.has(file)) {
+    shells.set(file, fs.readFileSync(file, 'utf8').split('__V__').join(pkg.version));
+  }
+  res.type('html').send(shells.get(file));
+}
+
+// Canonical paths, so nobody reaches the raw on-disk shells with __V__ unreplaced.
+app.get('/index.html', (_req, res) => res.redirect(301, '/'));
+app.get('/admin/index.html', (_req, res) => res.redirect(301, '/admin'));
+
 /* The console is a static shell that asks /api/auth/me who you are and renders
    either the sign-in form or the dashboard. Nothing sensitive lives in the
    shell — every byte of data comes from /api/admin/*, which requires a
    superadmin session. */
 app.get(['/admin', '/admin/'], (_req, res) => {
   res.setHeader('Cache-Control', 'no-store');
-  res.sendFile(path.join(PUBLIC_DIR, 'admin', 'index.html'));
+  sendShell(res, 'admin', 'index.html');
 });
 
 app.use(
   express.static(PUBLIC_DIR, {
+    // "/" must reach sendShell() below, not be answered with the raw on-disk
+    // index.html (which still has __V__ in its asset URLs).
+    index: false,
     etag: true,
     lastModified: true,
     setHeaders(res, filePath) {
@@ -70,7 +93,7 @@ app.use(
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/') || path.extname(req.path)) return next();
   res.setHeader('Cache-Control', 'no-cache');
-  res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+  sendShell(res, 'index.html');
 });
 
 app.use((req, res) => {

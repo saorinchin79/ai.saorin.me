@@ -155,6 +155,7 @@ function prune() {
   const cutoff = since(30 * 24 * HOUR);
   db.prepare('DELETE FROM otp_codes WHERE created_at < ?').run(cutoff);
   db.prepare('DELETE FROM otp_sends WHERE created_at < ?').run(cutoff);
+  db.prepare('DELETE FROM login_attempts WHERE created_at < ?').run(since(24 * HOUR));
   db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(nowIso());
 }
 

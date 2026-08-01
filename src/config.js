@@ -127,6 +127,19 @@ module.exports = {
   // survives a wiped database.
   superadmins: list(process.env.SUPERADMIN_EMAILS),
 
+  /* Optional password for those accounts, applied on every boot — the env is the
+     source of truth, so rotating is a .env edit plus a restart, and unsetting it
+     drops them back to one-time codes. Never committed; see .env.example. */
+  superadminPassword: process.env.SUPERADMIN_PASSWORD || '',
+
+  /* Password login is the one endpoint an attacker can grind at offline-style,
+     so failures are counted per account and per IP over a rolling window. */
+  login: {
+    windowMinutes: num(process.env.LOGIN_WINDOW_MINUTES, 15),
+    maxPerIdentifier: num(process.env.LOGIN_MAX_PER_ACCOUNT, 8),
+    maxPerIp: num(process.env.LOGIN_MAX_PER_IP, 20),
+  },
+
   // Prompt capture is disclosed in the UI; this switch turns the whole feature off.
   captureAnonymous: process.env.CAPTURE_ANONYMOUS !== '0',
 

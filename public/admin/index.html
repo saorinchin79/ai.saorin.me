@@ -27,16 +27,32 @@
   <div class="login">
     <div class="eyebrow">Prompt Studio</div>
     <h1>Superadmin</h1>
-    <p class="sub">Sign in with the email on the superadmin list. We'll send a one-time code.</p>
+    <p class="sub" id="login-sub"></p>
 
     <div id="login-note" class="note hidden"></div>
 
-    <form id="login-email-form">
+    <form id="login-password-form">
+      <label class="field">
+        <span>Username</span>
+        <input type="email" id="login-username" autocomplete="username"
+               placeholder="you@example.com" required>
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" id="login-password" autocomplete="current-password"
+               placeholder="••••••••" required>
+      </label>
+      <button class="btn btn--primary" type="submit" id="login-submit">Sign in</button>
+      <button class="btn" type="button" id="to-otp" style="margin-top:10px">Email me a code instead</button>
+    </form>
+
+    <form id="login-email-form" class="hidden">
       <label class="field">
         <span>Email address</span>
         <input type="email" id="login-email" autocomplete="email" placeholder="you@example.com" required>
       </label>
       <button class="btn btn--primary" type="submit" id="login-send">Send code</button>
+      <button class="btn" type="button" id="to-password" style="margin-top:10px">Use a password instead</button>
     </form>
 
     <form id="login-code-form" class="hidden">

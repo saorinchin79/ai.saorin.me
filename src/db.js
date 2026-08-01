@@ -1,5 +1,6 @@
 const Database = require('better-sqlite3');
 const config = require('./config');
+const password = require('./password');
 
 const db = new Database(config.dbFile);
 
@@ -88,6 +89,27 @@ const MIGRATIONS = [
       CREATE INDEX idx_prompts_anon ON prompts(anon_id, created_at DESC);
     `,
   },
+  {
+    name: '002-passwords',
+    up: `
+      -- Optional: only accounts that are given one can sign in with a password.
+      -- Everyone else stays on one-time codes.
+      ALTER TABLE users ADD COLUMN password_hash TEXT;
+      ALTER TABLE users ADD COLUMN password_set_at TEXT;
+
+      -- Failed-login ledger backing the brute-force throttle. Survives restarts,
+      -- unlike an in-memory counter an attacker could wait out.
+      CREATE TABLE login_attempts (
+        id         INTEGER PRIMARY KEY,
+        identifier TEXT,
+        ip         TEXT,
+        ok         INTEGER NOT NULL,
+        created_at TEXT NOT NULL
+      );
+      CREATE INDEX idx_login_ident ON login_attempts(identifier, created_at);
+      CREATE INDEX idx_login_ip ON login_attempts(ip, created_at);
+    `,
+  },
 ];
 
 function migrate() {
@@ -113,22 +135,44 @@ function migrate() {
 migrate();
 
 /* Anyone listed in SUPERADMIN_EMAILS is a superadmin. Seeded here so the first
-   admin exists before they ever sign in, and re-asserted on login. */
+   admin exists before they ever sign in, and re-asserted on login.
+
+   SUPERADMIN_PASSWORD works the same way: the environment is the source of
+   truth and is re-applied on every boot, so rotating the password is a .env
+   edit plus a restart. Clearing the variable strips the password and drops
+   those accounts back to one-time codes only. */
 function seedSuperadmins() {
   const now = new Date().toISOString();
-  const find = db.prepare('SELECT id, role FROM users WHERE email = ?');
+  const find = db.prepare('SELECT id, role, password_hash FROM users WHERE email = ?');
   const insert = db.prepare(
     "INSERT INTO users (email, display_name, role, created_at) VALUES (?, ?, 'superadmin', ?)"
   );
   const promote = db.prepare("UPDATE users SET role = 'superadmin' WHERE id = ?");
+  const setPassword = db.prepare(
+    'UPDATE users SET password_hash = ?, password_set_at = ? WHERE id = ?'
+  );
+
   for (const email of config.superadmins) {
-    const row = find.get(email);
+    let row = find.get(email);
     if (!row) {
-      insert.run(email, email.split('@')[0], now);
+      const info = insert.run(email, email.split('@')[0], now);
+      row = { id: info.lastInsertRowid, role: 'superadmin', password_hash: null };
       console.log(`[db] seeded superadmin ${email}`);
     } else if (row.role !== 'superadmin') {
       promote.run(row.id);
       console.log(`[db] promoted ${email} to superadmin`);
+    }
+
+    if (config.superadminPassword) {
+      // Re-hashing every boot would churn the salt for no reason, so only write
+      // when the stored hash doesn't already represent this exact password.
+      if (!password.matches(config.superadminPassword, row.password_hash)) {
+        setPassword.run(password.hash(config.superadminPassword), now, row.id);
+        console.log(`[db] set password for ${email}`);
+      }
+    } else if (row.password_hash) {
+      setPassword.run(null, null, row.id);
+      console.log(`[db] cleared password for ${email} (SUPERADMIN_PASSWORD unset)`);
     }
   }
 }

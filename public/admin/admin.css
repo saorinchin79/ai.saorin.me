@@ -83,7 +83,8 @@ button, input, select, textarea { font-family: var(--sans); font-size: 13px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field > span { font-size: 12px; font-weight: 600; color: var(--muted); }
 
-input[type='text'], input[type='email'], input[type='search'], input[type='date'], select {
+input[type='text'], input[type='email'], input[type='password'],
+input[type='search'], input[type='date'], select {
   background: var(--bg); border: 1px solid var(--line-2); border-radius: 9px;
   padding: 9px 12px; color: var(--fg); min-width: 0;
 }

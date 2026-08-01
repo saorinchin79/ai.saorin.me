@@ -75,6 +75,48 @@
     }
   }
 
+  const SUBTITLES = {
+    password: 'Sign in with your superadmin username and password.',
+    otp: "Enter the email on the superadmin list and we'll send a one-time code.",
+  };
+
+  function showLoginForm(which) {
+    el('login-password-form').classList.toggle('hidden', which !== 'password');
+    el('login-email-form').classList.toggle('hidden', which !== 'otp');
+    el('login-code-form').classList.add('hidden');
+    el('login-sub').textContent = SUBTITLES[which] || SUBTITLES.otp;
+    note('');
+    el(which === 'password' ? 'login-username' : 'login-email').focus();
+  }
+  el('to-otp').addEventListener('click', () => showLoginForm('otp'));
+  el('to-password').addEventListener('click', () => showLoginForm('password'));
+
+  el('login-password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    note('');
+    busy(el('login-submit'), true);
+    try {
+      const out = await api('/api/auth/password', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: el('login-username').value.trim(),
+          password: el('login-password').value,
+        }),
+      });
+      if (out.user.role !== 'superadmin') {
+        note('That account is not a superadmin.');
+        return;
+      }
+      start(out.user);
+    } catch (err) {
+      note(err.message);
+      el('login-password').value = '';
+      el('login-password').focus();
+    } finally {
+      busy(el('login-submit'), false, 'Sign in');
+    }
+  });
+
   el('login-email-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = el('login-email').value.trim();
@@ -120,10 +162,8 @@
   });
 
   el('login-back').addEventListener('click', () => {
-    el('login-code-form').classList.add('hidden');
-    el('login-email-form').classList.remove('hidden');
     el('login-code').value = '';
-    note('');
+    showLoginForm('otp');
   });
 
   el('logout').addEventListener('click', async () => {
@@ -464,11 +504,20 @@
       .finally(() => showView(location.hash.slice(1) || 'overview', false));
   }
 
-  function showLogin() {
+  async function showLogin() {
     el('boot').classList.add('hidden');
     el('console').classList.add('hidden');
     el('login').classList.remove('hidden');
-    el('login-email').focus();
+    // Offer the password form only when an account actually has one set;
+    // otherwise the one-time code is the only way in.
+    let hasPassword = true;
+    try {
+      hasPassword = (await api('/api/auth/config')).password;
+    } catch {
+      /* fall back to showing it */
+    }
+    el('to-password').classList.toggle('hidden', !hasPassword);
+    showLoginForm(hasPassword ? 'password' : 'otp');
   }
 
   api('/api/auth/me')

@@ -9,9 +9,16 @@
 
   const state = {
     user: null,
-    config: { email: false, telegram: false, dial: '855', country: 'KH', otpLength: 6 },
+    config: {
+      email: false,
+      telegram: false,
+      password: false,
+      dial: '855',
+      country: 'KH',
+      otpLength: 6,
+    },
     channel: 'email',
-    step: 'choose', // choose → code
+    step: 'choose', // choose → code, or → password
     identifier: '',
     busy: false,
     error: '',
@@ -112,6 +119,11 @@
 
   .aigen-fine { margin: 16px 0 0; font-size: 11.5px; line-height: 1.6; color: #5c6470; }
   .aigen-fine a { color: #8b93a1; }
+  .aigen-fine button {
+    background: none; border: none; padding: 0; color: #8b93a1;
+    font: inherit; text-decoration: underline; cursor: pointer;
+  }
+  .aigen-fine button:hover { color: #c8f04a; }
 
   .aigen-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
   .aigen-id { font-size: 14px; font-weight: 600; word-break: break-all; }
@@ -225,7 +237,40 @@
         </button>
       </form>
       <p class="aigen-fine">We'll send a ${state.config.otpLength}-digit code — no password to remember.
-      New here? The code creates your account.</p>`;
+      New here? The code creates your account.${
+        state.config.password
+          ? ' <button type="button" data-to-password>Have a password?</button>'
+          : ''
+      }</p>`;
+  }
+
+  /* Only accounts that have been given a password (the superadmin) can use this,
+     so it stays a deliberate detour rather than the default path. */
+  function passwordView() {
+    return `<div class="aigen-row">
+        <div>
+          <div class="aigen-eyebrow">Prompt Studio</div>
+          <h2 style="margin:6px 0 0">Sign in</h2>
+        </div>
+        <button class="aigen-x" data-close type="button">&times;</button>
+      </div>
+      ${noteHtml()}
+      <form data-form="password">
+        <label class="aigen-field">
+          <span>Username</span>
+          <input type="email" name="username" autocomplete="username" required
+                 placeholder="you@example.com" value="${esc(state.identifier)}">
+        </label>
+        <label class="aigen-field">
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="current-password"
+                 required placeholder="••••••••">
+        </label>
+        <button class="aigen-btn aigen-btn--primary" type="submit" ${state.busy ? 'disabled' : ''}>
+          ${state.busy ? '<span class="aigen-spin"></span>' : 'Sign in'}
+        </button>
+      </form>
+      <button class="aigen-btn" data-back type="button">Use a one-time code instead</button>`;
   }
 
   function codeView() {
@@ -259,7 +304,13 @@
       modalHost.innerHTML = '';
       return;
     }
-    const body = state.user ? accountView() : state.step === 'code' ? codeView() : chooseView();
+    const body = state.user
+      ? accountView()
+      : state.step === 'code'
+        ? codeView()
+        : state.step === 'password'
+          ? passwordView()
+          : chooseView();
     modalHost.innerHTML = `<div class="aigen-modal"><div class="aigen-box">${body}</div></div>`;
 
     const overlay = modalHost.querySelector('.aigen-modal');
@@ -293,10 +344,22 @@
       })
     );
 
+    const toPassword = modalHost.querySelector('[data-to-password]');
+    if (toPassword) {
+      toPassword.addEventListener('click', () => {
+        state.step = 'password';
+        state.error = '';
+        state.info = '';
+        renderModal();
+      });
+    }
+
     const startForm = modalHost.querySelector('[data-form="start"]');
     if (startForm) startForm.addEventListener('submit', onStart);
     const verifyForm = modalHost.querySelector('[data-form="verify"]');
     if (verifyForm) verifyForm.addEventListener('submit', onVerify);
+    const pwForm = modalHost.querySelector('[data-form="password"]');
+    if (pwForm) pwForm.addEventListener('submit', onPassword);
 
     const focusMe = modalHost.querySelector('input[autofocus], input');
     if (focusMe) focusMe.focus();
@@ -367,6 +430,38 @@
             out.claimedPrompts === 1 ? '' : 's'
           } from this browser were added to your account.`
         : 'Welcome!';
+      renderChip();
+      broadcast();
+    } catch (err) {
+      state.error = err.message;
+    } finally {
+      state.busy = false;
+      renderModal();
+    }
+  }
+
+  async function onPassword(e) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const username = form.get('username').toString().trim();
+    state.identifier = username;
+    state.busy = true;
+    state.error = '';
+    state.info = '';
+    renderModal();
+
+    try {
+      const out = await api('/api/auth/password', {
+        method: 'POST',
+        body: JSON.stringify({ email: username, password: form.get('password').toString() }),
+      });
+      state.user = out.user;
+      state.step = 'choose';
+      state.info = out.claimedPrompts
+        ? `Welcome back! ${out.claimedPrompts} prompt${
+            out.claimedPrompts === 1 ? '' : 's'
+          } from this browser were added to your account.`
+        : 'Welcome back!';
       renderChip();
       broadcast();
     } catch (err) {

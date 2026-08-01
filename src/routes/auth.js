@@ -1,6 +1,8 @@
 const express = require('express');
 const config = require('../config');
+const db = require('../db');
 const otp = require('../otp');
+const password = require('../password');
 const mailer = require('../mailer');
 const telegram = require('../telegram');
 const {
@@ -11,6 +13,7 @@ const {
   upsertUser,
 } = require('../auth');
 const {
+  nowIso,
   clientIp,
   clientCountry,
   dialFor,
@@ -22,6 +25,10 @@ const {
 } = require('../util');
 
 const router = express.Router();
+
+// Verified against when the account doesn't exist, so the unknown-email path
+// costs roughly the same time as a real one and can't be probed by timing.
+const DUMMY_HASH = password.hash('$never-a-real-password$');
 
 const fail = (res, status, error) => res.status(status).json({ error });
 
@@ -59,6 +66,7 @@ router.get('/config', (req, res) => {
   res.json({
     email: mailer.enabled(),
     telegram: telegram.enabled(),
+    password: passwordLoginAvailable(),
     country,
     dial: dialFor(country),
     otpLength: config.otp.length,
@@ -73,6 +81,76 @@ router.get('/me', (req, res) => {
 router.post('/logout', (req, res) => {
   destroySession(req, res);
   res.json({ ok: true });
+});
+
+/* --------------------------------------------------------- password login */
+
+/** Advertise the password form only when at least one account can actually use it. */
+function passwordLoginAvailable() {
+  return db.prepare('SELECT 1 FROM users WHERE password_hash IS NOT NULL LIMIT 1').get() != null;
+}
+
+const sinceWindow = () =>
+  new Date(Date.now() - config.login.windowMinutes * 60 * 1000).toISOString();
+
+function recordAttempt(identifier, ip, ok) {
+  db.prepare(
+    'INSERT INTO login_attempts (identifier, ip, ok, created_at) VALUES (?, ?, ?, ?)'
+  ).run(identifier, ip, ok ? 1 : 0, nowIso());
+}
+
+/** Count only failures — a success shouldn't push a legitimate user toward lockout. */
+function recentFailures(column, value) {
+  if (!value) return 0;
+  return db
+    .prepare(
+      `SELECT COUNT(*) c FROM login_attempts WHERE ${column} = ? AND ok = 0 AND created_at > ?`
+    )
+    .get(value, sinceWindow()).c;
+}
+
+router.post('/password', (req, res) => {
+  const email = normalizeEmail(req.body?.email ?? req.body?.username);
+  const secret = String(req.body?.password || '');
+
+  if (!isEmail(email) || !secret) {
+    return fail(res, 400, 'Enter your email and password');
+  }
+
+  const ip = clientIp(req);
+  const mins = config.login.windowMinutes;
+  if (recentFailures('identifier', email) >= config.login.maxPerIdentifier) {
+    return fail(res, 429, `Too many failed attempts — try again in ${mins} minutes`);
+  }
+  if (recentFailures('ip', ip) >= config.login.maxPerIp) {
+    return fail(res, 429, `Too many failed attempts — try again in ${mins} minutes`);
+  }
+
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+
+  /* One message for "no such account", "no password set" and "wrong password".
+     Anything more specific tells an attacker which addresses are real. The
+     dummy verify keeps the timing of the unknown-account path in the same
+     ballpark as a real one. */
+  const ok = user?.password_hash
+    ? password.verify(secret, user.password_hash)
+    : (password.verify(secret, DUMMY_HASH), false);
+
+  if (!ok) {
+    recordAttempt(email, ip, false);
+    return fail(res, 401, 'Incorrect email or password');
+  }
+
+  if (user.status !== 'active') {
+    recordAttempt(email, ip, false);
+    return fail(res, 403, 'This account has been suspended');
+  }
+
+  recordAttempt(email, ip, true);
+  createSession(res, user, req);
+  const claimed = claimAnonymousPrompts(user.id, req.anonId);
+
+  res.json({ ok: true, created: false, claimedPrompts: claimed, user: publicUser(user) });
 });
 
 /* ------------------------------------------------------------- email  OTP */
